@@ -5,7 +5,6 @@
   <p><strong>A customisable, AI-native dev workspace built on Terax.</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="license" />
     <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="platform" />
   </p>
 </div>
@@ -55,6 +54,3 @@ pnpm tauri build        # production bundle
 
 Tauri 2, Rust, portable-pty, React 19, TypeScript, Vite, xterm.js, CodeMirror 6, Vercel AI SDK v6, Tailwind v4, shadcn/ui, Zustand, Lucide.
 
-## License
-
-Apache-2.0. Matches upstream.

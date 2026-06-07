@@ -4,9 +4,7 @@
 
   <p><strong>A customisable, AI-native dev workspace built on Terax.</strong></p>
 
-  <p>
-    <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="platform" />
-  </p>
+
 </div>
 
 ---

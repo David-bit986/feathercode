@@ -2,7 +2,7 @@
   <img src="public/logo.png" width="144" height="144" alt="FeatherCode" />
   <h1>FeatherCode</h1>
 
-  <p><strong>A warm, ink-drawn AI-native dev workspace — built for the gravity you want.</strong></p>
+  <p><strong>A more customisable, AI-native dev workspace — built on Terax.</strong></p>
 
   <p>
     <img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="license" />
@@ -14,62 +14,31 @@
 
 ## ⚠️ Work in Progress
 
-FeatherCode is actively being developed and **contains bugs**. Things may break, change, or look unfinished. Use at your own pace — and feel free to [report issues](https://github.com/crynta/feathercode/issues) if you find something off.
+This project is actively being worked on and still has bugs. Things may break or look rough. [Report issues](https://github.com/David-bit986/feathercode/issues) if you find something.
 
 ---
 
 ## About
 
-FeatherCode is a personal fork of the [Terax](https://github.com/crynta/terax-ai) project (by [crynta](https://github.com/crynta)) — a lightweight, open-source AI-native terminal emulator with a PTY backend, multi-tab editor, and agentic AI side panel. I loved the core idea and wanted to build something that felt more like **Antigravity** in spirit: warm, tactile, with a hand-drawn aesthetic and deeper customisation.
+FeatherCode is a fork of [Terax](https://github.com/crynta/terax-ai) by [crynta](https://github.com/crynta). I love using Antigravity but felt it was missing things I wanted — so I built them here on top of Terax's solid foundation.
 
-### What FeatherCode adds on top of Terax
+### What's different from Terax
 
-- **Warm ink-drawn identity** — hand-drawn feather logo, rounded amber accents, dark charcoal palette, and an Apple-inspired light mode
-- **Custom AI support** — DeepSeek, Mistral, xAI, OpenRouter, LM Studio, MLX, and Ollama with their own branded logos in the model selector
-- **Skills system** — import skill sets from any local folder (markdown + tools), toggle them on/off, and invoke with `/skill-name` slash commands
-- **Per-project sessions** — each workspace gets its own isolated chat history, stored separately by project hash
-- **Provider brand icons** — OpenAI, Anthropic, Google Gemini, xAI, Mistral, DeepSeek, OpenRouter, LM Studio, Ollama — each shown with their actual logo in the model picker
-- **Fully rebranded** — no traces of the original Terax naming anywhere (events, shell integration paths, thread names, CSS classes, window titles, env vars, documentation)
-- **Expanded theme system** — 10 built-in themes (Feather, Claude, Tokyo Night, Nord, Tide, Sage, Catppuccin, Gruvbox, Rosé Pine, Caffeine), each with complete light + dark palettes
-- **AI panel width fix** — proper resizable panel that opens at a usable 40% width
+- **Skills system** — import skill sets from any folder, toggle them on/off, invoke with `/skill-name` in the chat input
+- **More AI providers** — DeepSeek, Mistral, xAI, OpenRouter, LM Studio, MLX, and Ollama with proper brand logos in the model picker
+- **Per-project sessions** — each workspace has its own isolated chat history
+- **10 themes** — Feather, Claude, Tokyo Night, Nord, Tide, Sage, Catppuccin, Gruvbox, Rosé Pine, Caffeine — all with light + dark variants
+- **Complete rebrand** — no Terax traces anywhere in code, UI, shell integration, or config
+- **Various fixes** — AI panel resizes properly, terminal right-click copies text instead of "Copy image", you can chat while an agent is running, agent notifications switch to the right session when clicked
 
-### Credit
-
-All the heavy engineering — the native PTY backend, WebGL terminal renderer, agentic AI pipeline, CodeMirror editor, git integration — is the incredible work of the [Terax team](https://github.com/crynta/terax-ai). FeatherCode is a personal remix built on their foundation.
-
-## Features
-
-### Terminal
-- xterm.js with WebGL renderer, multi-tab with background streaming
-- Native PTY backend via `portable-pty` (zsh, bash, pwsh, fish, cmd)
-- Split panels (horizontal and vertical), inline search, link detection
-- Per-tab workspace environments on Windows (Local, or any WSL distro)
-
-### Code editor
-- CodeMirror 6 (TS/JS, Rust, Python, Go, C/C++, Java, HTML/CSS, JSON, Markdown, etc.)
-- Inline AI autocomplete, AI edit diffs (accept/reject hunk by hunk), Vim mode
-- Ten built-in editor themes
-
-### Source control
-- Stage / unstage hunks, commit, push, branch display, git history with commit graph
-
-### AI
-- **BYOK providers:** OpenAI, Anthropic, Google (Gemini), Groq, xAI, Cerebras, OpenRouter, DeepSeek, Mistral + any OpenAI-compatible endpoint
-- **Local / offline:** LM Studio, MLX, Ollama
-- **Skills:** import from folder, toggle on/off, slash-command invocation
-- **Agentic workflow:** plans, sub-agents, `PROJECT.md` memory, file tools, bash with approval gating
-- **Composer:** snippets via `#handle`, files via `@path`, slash commands, voice input
-
-### Themes
-- 10 bundled presets with full light + dark variants
-- Custom theme editor, import/export, background images with blur and opacity
+All the core engineering — PTY backend, WebGL terminal, agentic AI pipeline, CodeMirror editor, git tools — is [Terax's work](https://github.com/crynta/terax-ai). Go star their repo.
 
 ## Install
 
-Download the latest installer from [Releases](https://github.com/crynta/feathercode/releases/latest).
+Download the latest installer from [Releases](https://github.com/David-bit986/feathercode/releases/latest).
 
 ### Windows
-- "Windows protected your PC" — click **More info** then **Run anyway** (not code-signed yet)
+- First launch shows "Windows protected your PC" — click **More info** then **Run anyway**
 - Default shell: `pwsh.exe` > `powershell.exe` > `cmd.exe`
 
 ## Build from source
@@ -80,12 +49,12 @@ pnpm tauri dev          # development
 pnpm tauri build        # production bundle
 ```
 
-**Prerequisites:** Rust (stable), Node 20+, pnpm, Tauri platform prerequisites.
+**Prerequisites:** Rust (stable, [rustup.rs](https://rustup.rs)), Node 20+, [pnpm](https://pnpm.io), [Tauri prerequisites](https://tauri.app/start/prerequisites/).
 
-## Built on
+## Tech stack
 
-Tauri 2, Rust, `portable-pty`, React 19, TypeScript, Vite, xterm.js, CodeMirror 6, Vercel AI SDK v6, Tailwind v4, shadcn/ui, Zustand, Lucide icons.
+Tauri 2, Rust, portable-pty, React 19, TypeScript, Vite, xterm.js, CodeMirror 6, Vercel AI SDK v6, Tailwind v4, shadcn/ui, Zustand, Lucide.
 
 ## License
 
-Apache-2.0 — same as the upstream project.
+Apache-2.0 — same as upstream.

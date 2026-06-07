@@ -1,3 +1,4 @@
+import { CornerUpLeft, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
@@ -11,12 +12,8 @@ import {
   type Shortcut,
   type ShortcutId,
 } from "@/modules/shortcuts/shortcuts";
-import {
-  ArrowTurnBackwardIcon,
-  Search01Icon,
-  Delete02Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useEffect, useState, useMemo } from "react";
 import { SectionHeader } from "../components/SectionHeader";
 import {
@@ -83,8 +80,7 @@ export function ShortcutsSection() {
           className="h-8 gap-1.5 px-2.5 text-[11px]"
           onClick={() => setResetDialogOpen(true)}
         >
-          <HugeiconsIcon
-            icon={ArrowTurnBackwardIcon}
+          <CornerUpLeft
             size={12}
             strokeWidth={2}
           />
@@ -93,8 +89,7 @@ export function ShortcutsSection() {
       </div>
 
       <div className="relative">
-        <HugeiconsIcon
-          icon={Search01Icon}
+        <Search
           size={14}
           strokeWidth={2}
           className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
@@ -227,7 +222,7 @@ function ShortcutRow({
                   onClick={onReset}
                   title="Reset to default"
                 >
-                  <HugeiconsIcon icon={ArrowTurnBackwardIcon} size={12} />
+                  <CornerUpLeft size={12} />
                 </Button>
               )}
               <Button
@@ -237,7 +232,7 @@ function ShortcutRow({
                 onClick={onClear}
                 title="Clear shortcut"
               >
-                <HugeiconsIcon icon={Delete02Icon} size={12} />
+                <Trash2 size={12} />
               </Button>
             </div>
           </>

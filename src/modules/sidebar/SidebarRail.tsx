@@ -1,14 +1,17 @@
+import { GitBranch, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FolderGitTwoIcon, FolderTreeIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import type { SidebarViewId } from "./types";
+
+import type { LucideIcon } from "lucide-react";
 
 export const SIDEBAR_RAIL_HEIGHT = 36;
 
 type RailItem = {
   id: SidebarViewId;
   label: string;
-  icon: Parameters<typeof HugeiconsIcon>[0]["icon"];
+  icon: LucideIcon;
   badge?: number;
 };
 
@@ -20,11 +23,11 @@ type Props = {
 
 export function SidebarRail({ activeView, onSelectView, changedCount }: Props) {
   const items: RailItem[] = [
-    { id: "explorer", label: "Files", icon: FolderTreeIcon },
+    { id: "explorer", label: "Files", icon: Network },
     {
       id: "source-control",
       label: "Source Control",
-      icon: FolderGitTwoIcon,
+      icon: GitBranch,
       badge: changedCount,
     },
   ];
@@ -52,8 +55,7 @@ export function SidebarRail({ activeView, onSelectView, changedCount }: Props) {
                 : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground",
             )}
           >
-            <HugeiconsIcon
-              icon={item.icon}
+            <item.icon
               size={14}
               strokeWidth={isActive ? 2 : 1.75}
               className="shrink-0 transition-[stroke-width] duration-150"

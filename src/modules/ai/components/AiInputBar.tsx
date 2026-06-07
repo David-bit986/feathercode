@@ -1,15 +1,10 @@
+import { Brain, Code, Hash, Key, Terminal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import {
-  Cancel01Icon,
-  CodeIcon,
-  HashtagIcon,
-  Key01Icon,
-  TerminalIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePresence } from "@/lib/usePresence";
 import { useWorkspaceFiles } from "../hooks/useWorkspaceFiles";
@@ -18,6 +13,7 @@ import { SLASH_COMMANDS } from "../lib/slashCommands";
 import type { Snippet } from "../lib/snippets";
 import { useChatStore } from "../store/chatStore";
 import { useSnippetsStore } from "../store/snippetsStore";
+import { useSkillsStore } from "../store/skillsStore";
 import { AgentSwitcher } from "./AgentSwitcher";
 import { FilePickerContent } from "./FilePicker";
 import { SnippetPickerContent, type PickerItem } from "./SnippetPicker";
@@ -71,6 +67,7 @@ function detectFileTrigger(value: string, caret: number): FileTrigger | null {
 export function AiInputBar() {
   const c = useComposer();
   const snippets = useSnippetsStore((s) => s.snippets);
+  const skills = useSkillsStore((s) => s.skills);
   const workspaceRoot = useChatStore((s) => s.live.getWorkspaceRoot());
 
   const [trigger, setTrigger] = useState<SnippetTrigger | null>(null);
@@ -115,7 +112,26 @@ export function AiInputBar() {
         (c) => !q || c.name.includes(q) || c.label.toLowerCase().includes(q),
       )
       .map((command) => ({ kind: "command", command }));
-    if (trigger.char === "/") return cmdItems;
+
+    if (trigger.char === "/") {
+      const skillItems: PickerItem[] = skills
+        .filter((s) => {
+          if (!s.enabled) return false;
+          const handle = s.name.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+          return !q || handle.includes(q) || s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q);
+        })
+        .map((s) => ({
+          kind: "command" as const,
+          command: {
+            name: s.name.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+            invocation: `/${s.name.toLowerCase().replace(/[^a-z0-9-]/g, "-")}`,
+            label: s.description || s.name,
+            icon: Brain,
+          },
+        }));
+      return [...cmdItems, ...skillItems];
+    }
+
     const snipItems: PickerItem[] = snippets
       .filter(
         (s) =>
@@ -126,7 +142,7 @@ export function AiInputBar() {
       )
       .map((snippet) => ({ kind: "snippet", snippet }));
     return [...cmdItems, ...snipItems];
-  }, [trigger, snippets]);
+  }, [trigger, snippets, skills]);
 
   const FILE_PICKER_CAP = 30;
   const filteredFiles = useMemo<string[]>(() => {
@@ -288,7 +304,7 @@ export function AiInputBar() {
                     c.submit();
                   }
                 }}
-                placeholder="Ask Terax anything   -   # for snippets and commands, @ for files"
+                placeholder="Ask FeatherCode anything   -   # for snippets and commands, @ for files"
                 rows={1}
                 className={cn(
                   "max-h-40 flex-1 resize-none bg-transparent text-[13px] leading-relaxed outline-none",
@@ -319,7 +335,7 @@ export function AiInputBar() {
         </Popover>
 
         {voiceRow.mounted && (
-          <div data-state={voiceRow.state} className="terax-reveal">
+          <div data-state={voiceRow.state} className="fc-reveal">
             <div className="flex items-center gap-1.5 px-1 text-[11px] text-muted-foreground">
               {c.voice.recording ? (
                 <span className="size-1.5 animate-pulse rounded-full bg-destructive" />
@@ -347,7 +363,7 @@ function ChipsRow({
   onRemoveFile: (id: string) => void;
   snippets: Snippet[];
   onRemoveSnippet: (id: string) => void;
-  commands: { name: string; label: string; icon: typeof HashtagIcon }[];
+  commands: { name: string; label: string; icon: typeof Hash }[];
   onRemoveCommand: (name: string) => void;
 }) {
   if (files.length === 0 && snippets.length === 0 && commands.length === 0)
@@ -360,8 +376,7 @@ function ChipsRow({
             className="group flex items-center gap-1 rounded-md border border-border/60 bg-card px-1.5 py-0.5 text-[11px] animate-in fade-in-0 zoom-in-95 duration-150"
             title={cmd.label}
           >
-            <HugeiconsIcon
-              icon={cmd.icon}
+            <cmd.icon
               size={11}
               strokeWidth={1.75}
               className="text-muted-foreground"
@@ -373,7 +388,7 @@ function ChipsRow({
               className="ml-0.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
               aria-label="Remove command"
             >
-              <HugeiconsIcon icon={Cancel01Icon} size={10} strokeWidth={2} />
+              <X size={10} strokeWidth={2} />
             </button>
           </div>
         ))}
@@ -383,8 +398,7 @@ function ChipsRow({
             className="group flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[11px] text-primary animate-in fade-in-0 zoom-in-95 duration-150"
             title={s.description || s.name}
           >
-            <HugeiconsIcon
-              icon={HashtagIcon}
+            <Hash
               size={11}
               strokeWidth={2}
               className="opacity-80"
@@ -396,7 +410,7 @@ function ChipsRow({
               className="ml-0.5 opacity-0 transition-opacity group-hover:opacity-100"
               aria-label="Remove snippet"
             >
-              <HugeiconsIcon icon={Cancel01Icon} size={10} strokeWidth={2} />
+              <X size={10} strokeWidth={2} />
             </button>
           </div>
         ))}
@@ -408,12 +422,19 @@ function ChipsRow({
             {f.kind === "image" && f.url ? (
               <img src={f.url} alt="" className="size-4 rounded object-cover" />
             ) : f.kind === "selection" ? (
-              <HugeiconsIcon
-                icon={f.source === "editor" ? CodeIcon : TerminalIcon}
-                size={11}
-                strokeWidth={1.75}
-                className="text-muted-foreground"
-              />
+              f.source === "editor" ? (
+                <Code
+                  size={11}
+                  strokeWidth={1.75}
+                  className="text-muted-foreground"
+                />
+              ) : (
+                <Terminal
+                  size={11}
+                  strokeWidth={1.75}
+                  className="text-muted-foreground"
+                />
+              )
             ) : (
               <span className="font-mono text-[10px] text-muted-foreground">
                 {extOf(f.name)}
@@ -433,7 +454,7 @@ function ChipsRow({
               className="ml-0.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
               aria-label="Remove"
             >
-              <HugeiconsIcon icon={Cancel01Icon} size={10} strokeWidth={2} />
+              <X size={10} strokeWidth={2} />
             </button>
           </div>
         ))}
@@ -470,7 +491,7 @@ export function AiInputBarConnect({ onAdd }: { onAdd: () => void }) {
           OS keychain.
         </span>
         <Button size="xs" onClick={onAdd}>
-          <HugeiconsIcon icon={Key01Icon} />
+          <Key />
           Connect provider
         </Button>
       </div>

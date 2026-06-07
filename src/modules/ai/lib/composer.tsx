@@ -113,8 +113,8 @@ export function AiComposerProvider({ children }: ProviderProps) {
         void attachFileByPath(path);
       }
     };
-    window.addEventListener("terax:ai-attach-file", onAttach);
-    return () => window.removeEventListener("terax:ai-attach-file", onAttach);
+    window.addEventListener("fc:ai-attach-file", onAttach);
+    return () => window.removeEventListener("fc:ai-attach-file", onAttach);
     // attachFileByPath is stable for our purposes (closes over setFiles only)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -216,7 +216,6 @@ export function AiComposerProvider({ children }: ProviderProps) {
   };
 
   const submit = () => {
-    if (isBusy) return;
     const trimmed = value.trim();
     if (
       !trimmed &&
@@ -227,7 +226,7 @@ export function AiComposerProvider({ children }: ProviderProps) {
       return;
 
     // Slash-command interception. `/plan` toggles plan mode; `/init` rewrites
-    // the prompt to the TERAX.md scan template before sending.
+    // the prompt to the PROJECT.md scan template before sending.
     let effectiveText = trimmed;
     let commandMarker: string | null = null;
     let commandSource = trimmed;
@@ -244,7 +243,7 @@ export function AiComposerProvider({ children }: ProviderProps) {
       if (outcome.kind === "send-prompt") {
         effectiveText = outcome.prompt;
         if (outcome.commandName) {
-          commandMarker = `<terax-command name="${outcome.commandName}" />`;
+          commandMarker = `<fc-command name="${outcome.commandName}" />`;
         }
       }
     }
@@ -306,7 +305,6 @@ export function AiComposerProvider({ children }: ProviderProps) {
     if (!sessionId) return;
     const store = useChatStore.getState();
     store.patchAgentMeta({ hitStepCap: false, compactionNotice: null });
-    if (!store.mini.open) store.openMini();
     void (async () => {
       const { getOrCreateChat } = await import("../store/chatRuntime");
       const chat = getOrCreateChat(sessionId);

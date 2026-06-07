@@ -1,3 +1,4 @@
+import { CircleCheckBig, FileEdit, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,14 +28,8 @@ import {
 } from "@/modules/ai/store/snippetsStore";
 import { usePreferencesStore } from "@/modules/settings/preferences";
 import { setCustomInstructions } from "@/modules/settings/store";
-import {
-  Add01Icon,
-  CheckmarkCircle02Icon,
-  Delete02Icon,
-  Edit02Icon,
-  SparklesIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useEffect, useRef, useState } from "react";
 import { SectionHeader } from "../components/SectionHeader";
 
@@ -96,7 +91,7 @@ export function AgentsSection() {
               })
             }
           >
-            <HugeiconsIcon icon={Add01Icon} size={12} strokeWidth={1.75} />
+            <Plus size={12} strokeWidth={1.75} />
             New agent
           </Button>
         </div>
@@ -140,7 +135,7 @@ export function AgentsSection() {
               })
             }
           >
-            <HugeiconsIcon icon={Add01Icon} size={12} strokeWidth={1.75} />
+            <Plus size={12} strokeWidth={1.75} />
             New snippet
           </Button>
         </div>
@@ -177,8 +172,7 @@ export function AgentsSection() {
                   onClick={() => setEditingSnippet(s)}
                   title="Edit"
                 >
-                  <HugeiconsIcon
-                    icon={Edit02Icon}
+                  <FileEdit
                     size={12}
                     strokeWidth={1.75}
                   />
@@ -190,8 +184,7 @@ export function AgentsSection() {
                   onClick={() => removeSnippet(s.id)}
                   title="Delete"
                 >
-                  <HugeiconsIcon
-                    icon={Delete02Icon}
+                  <Trash2
                     size={12}
                     strokeWidth={1.75}
                   />
@@ -237,7 +230,7 @@ function AgentCard({
   onEdit: (() => void) | null;
   onDelete: (() => void) | null;
 }) {
-  const Icon = AGENT_ICONS[agent.icon] ?? SparklesIcon;
+  const AlertTriangle = AGENT_ICONS[agent.icon] ?? Sparkles;
   return (
     <div
       className={cn(
@@ -249,7 +242,7 @@ function AgentCard({
     >
       <div className="flex items-start gap-2">
         <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted/40">
-          <HugeiconsIcon icon={Icon} size={14} strokeWidth={1.5} />
+          <AlertTriangle size={14} strokeWidth={1.5} />
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="flex items-center gap-1.5 text-[12.5px] font-medium">
@@ -274,8 +267,7 @@ function AgentCard({
         >
           {active ? (
             <>
-              <HugeiconsIcon
-                icon={CheckmarkCircle02Icon}
+              <CircleCheckBig
                 size={10}
                 strokeWidth={2}
               />
@@ -294,7 +286,7 @@ function AgentCard({
               onClick={onEdit}
               title="Edit"
             >
-              <HugeiconsIcon icon={Edit02Icon} size={11} strokeWidth={1.75} />
+              <FileEdit size={11} strokeWidth={1.75} />
             </Button>
           ) : null}
           {onDelete ? (
@@ -305,7 +297,7 @@ function AgentCard({
               onClick={onDelete}
               title="Delete"
             >
-              <HugeiconsIcon icon={Delete02Icon} size={11} strokeWidth={1.75} />
+              <Trash2 size={11} strokeWidth={1.75} />
             </Button>
           ) : null}
         </div>
@@ -344,10 +336,10 @@ function AgentEditorDialog({
         <div className="-mx-2 max-h-[calc(100vh-14rem)] overflow-y-auto px-2 flex flex-col gap-3">
           <div className="flex gap-2">
             <div className="flex flex-col gap-1">
-              <Label>Icon</Label>
+              <Label>AlertTriangle</Label>
               <div className="flex flex-wrap gap-1">
                 {ICON_OPTIONS.map((id) => {
-                  const Icon = AGENT_ICONS[id] ?? SparklesIcon;
+                  const AlertTriangle = AGENT_ICONS[id] ?? Sparkles;
                   const active = draft.icon === id;
                   return (
                     <button
@@ -361,7 +353,7 @@ function AgentEditorDialog({
                           : "border-border/60 hover:bg-accent/40",
                       )}
                     >
-                      <HugeiconsIcon icon={Icon} size={13} strokeWidth={1.75} />
+                      <AlertTriangle size={13} strokeWidth={1.75} />
                     </button>
                   );
                 })}
@@ -395,7 +387,7 @@ function AgentEditorDialog({
               onChange={(e) =>
                 setDraft({ ...draft, instructions: e.target.value })
               }
-              placeholder="Persona & rules. Appended to Terax's core system prompt."
+              placeholder="Persona & rules. Appended to FeatherCode's core system prompt."
               className="min-h-40 resize-y text-[12px] leading-relaxed"
             />
           </div>

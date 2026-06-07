@@ -1,1 +1,1 @@
-TERAX.md
+PROJECT.md

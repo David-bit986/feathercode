@@ -1,3 +1,4 @@
+import { FileEdit, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
@@ -18,8 +19,8 @@ import { listBuiltinThemes } from "@/modules/theme/themes";
 import { validateTheme } from "@/modules/theme/validateTheme";
 import { deleteThemeFile, emitThemeEdit } from "@/modules/theme/themeFiles";
 import { DEFAULT_THEME_ID } from "@/modules/theme/types";
-import { Edit02Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useMemo, useRef, useState } from "react";
 import { SectionHeader } from "../components/SectionHeader";
@@ -143,7 +144,7 @@ export function ThemesSection() {
               className="h-7 gap-1.5 px-2 text-[11px]"
               onClick={onCreateTheme}
             >
-              <HugeiconsIcon icon={PlusSignIcon} size={11} strokeWidth={2} />
+              <Plus size={11} strokeWidth={2} />
               Create
             </Button>
             <Button
@@ -152,13 +153,13 @@ export function ThemesSection() {
               className="h-7 px-2 text-[11px]"
               onClick={onPickThemeFile}
             >
-              Import .terax-theme
+              Import .fc-theme
             </Button>
           </div>
           <input
             ref={fileInputRef}
             type="file"
-            accept=".terax-theme,.json,application/json"
+            accept=".fc-theme,.json,application/json"
             className="hidden"
             onChange={(e) => {
               void handleThemeFiles(e.target.files);
@@ -232,7 +233,7 @@ export function ThemesSection() {
                         onEditTheme(t.id);
                       }}
                     >
-                      <HugeiconsIcon icon={Edit02Icon} size={12} strokeWidth={1.75} />
+                      <FileEdit size={12} strokeWidth={1.75} />
                     </span>
                     <span
                       role="button"

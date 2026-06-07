@@ -155,8 +155,8 @@ export async function buildLanguageModel(
         baseURL: "https://openrouter.ai/api/v1",
         apiKey: key,
         headers: {
-          "HTTP-Referer": "https://terax.ai",
-          "X-Title": "Terax",
+          "HTTP-Referer": "https://feathercode.app",
+          "X-Title": "FeatherCode",
         },
       })(resolvedModelId);
       break;
@@ -306,6 +306,7 @@ function buildStableSystem(
   persona: { name: string; instructions: string } | null,
   customInstructions: string | undefined,
   projectMemory: string | null,
+  skillsInstructions?: string,
 ): string {
   const base = selectSystemPrompt(modelId);
   const personaBlock = persona?.instructions.trim()
@@ -316,9 +317,12 @@ function buildStableSystem(
     : "";
   const memoryBlock =
     projectMemory && projectMemory.trim().length > 0
-      ? `\n\n## PROJECT — TERAX.md\n${projectMemory.trim()}`
+      ? `\n\n## PROJECT — PROJECT.md\n${projectMemory.trim()}`
       : "";
-  return `${base}${memoryBlock}${personaBlock}${customBlock}`;
+  const skillsBlock = skillsInstructions?.trim()
+    ? `\n\n## ACTIVE SKILLS\n${skillsInstructions.trim()}`
+    : "";
+  return `${base}${memoryBlock}${personaBlock}${customBlock}${skillsBlock}`;
 }
 
 // OpenAI / Gemini / DeepSeek apply prefix caching automatically; only
@@ -365,6 +369,7 @@ export type RunAgentOptions = {
   modelId?: string;
   customInstructions?: string;
   agentPersona?: { name: string; instructions: string } | null;
+  skillsInstructions?: string;
   toolContext: ToolContext;
   onStep?: (step: string | null) => void;
   onUsage?: (delta: AgentUsageDelta) => void;
@@ -412,6 +417,7 @@ export async function runAgentStream(opts: RunAgentOptions) {
     opts.agentPersona ?? null,
     opts.customInstructions,
     opts.projectMemory ?? null,
+    opts.skillsInstructions,
   );
 
   const history = await convertToModelMessages(opts.uiMessages);

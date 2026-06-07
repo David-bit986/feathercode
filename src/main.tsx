@@ -1,3 +1,4 @@
+import React from "react";
 import "@fontsource/jetbrains-mono/latin-400.css";
 import "@fontsource/jetbrains-mono/latin-700.css";
 import "@fontsource/jetbrains-mono/cyrillic-400.css";
@@ -29,8 +30,30 @@ await invoke("pty_close_all").catch(() => {});
 // Seed before first paint so default tab mounts at target cwd (no flicker).
 await initLaunchDir();
 
+class ErrorBoundary extends React.Component<any, { hasError: boolean; error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div style={{ color: "red", padding: 20, fontSize: "12px", fontFamily: "monospace" }}>
+        {this.state.error?.message || String(this.state.error)}
+        <br/><br/>
+        {this.state.error?.stack}
+      </div>;
+    }
+    return this.props.children;
+  }
+}
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <App />,
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
 );
 
 // Window starts hidden (per tauri.conf.json) so users never see a transparent

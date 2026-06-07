@@ -32,6 +32,8 @@ export type ShortcutId =
   | "shortcuts.open"
   | "settings.open"
   | "sidebar.toggle"
+  | "missionControl.toggle"
+  | "workspace.openFolder"
   | "editor.undo"
   | "editor.redo";
 
@@ -66,7 +68,13 @@ export const SHORTCUTS: Shortcut[] = [
     id: "commandPalette.open",
     label: "Open command palette",
     group: "General",
-    defaultBindings: [{ [MOD_PROP]: true, shift: true, key: "p" }],
+    defaultBindings: [{ key: "P", [MOD_PROP]: true, shift: true }],
+  },
+  {
+    id: "workspace.openFolder",
+    label: "Open Folder",
+    group: "General",
+    defaultBindings: [{ key: "O", [MOD_PROP]: true }],
   },
   {
     id: "settings.open",
@@ -190,6 +198,12 @@ export const SHORTCUTS: Shortcut[] = [
     label: "Ask AI about selection",
     group: "AI",
     defaultBindings: [{ [MOD_PROP]: true, key: "j" }],
+  },
+  {
+    id: "missionControl.toggle",
+    label: "Toggle mission control",
+    group: "View",
+    defaultBindings: [{ [MOD_PROP]: true, shift: true, key: "m" }],
   },
   {
     id: "sidebar.toggle",

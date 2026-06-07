@@ -1,3 +1,4 @@
+import {  CircleAlert, RefreshCcw } from "lucide-react";
 import {
   Command,
   CommandDialog,
@@ -16,8 +17,8 @@ import {
   type KeyBinding,
   type ShortcutId,
 } from "@/modules/shortcuts";
-import { AlertCircleIcon, Refresh01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   COMMAND_PALETTE_ACTION_GROUPS,
@@ -72,7 +73,7 @@ export function CommandPalette({
   useEffect(() => {
     if (!open) return;
     const handle = window.setTimeout(() => {
-      document.getElementById("terax-command-palette-input")?.focus();
+      document.getElementById("fc-command-palette-input")?.focus();
     }, 0);
     return () => window.clearTimeout(handle);
   }, [open]);
@@ -191,7 +192,7 @@ export function CommandPalette({
         onKeyDown={onCommandKeyDown}
       >
         <CommandInput
-          id="terax-command-palette-input"
+          id="fc-command-palette-input"
           value={query}
           onValueChange={setQuery}
           placeholder="Run a command or open a file..."
@@ -236,8 +237,7 @@ export function CommandPalette({
                       onSelect={retry}
                       className="text-[12.5px]"
                     >
-                      <HugeiconsIcon
-                        icon={Refresh01Icon}
+                      <RefreshCcw
                         size={14}
                         strokeWidth={1.75}
                       />
@@ -312,8 +312,7 @@ function ActionItem({
       onSelect={onRun}
       className="text-[12.5px]"
     >
-      <HugeiconsIcon
-        icon={action.icon}
+      <action.icon
         size={14}
         strokeWidth={1.75}
         className="text-muted-foreground"
@@ -344,8 +343,7 @@ function StatusItem({
       className="text-[12.5px] font-normal"
     >
       {tone === "error" ? (
-        <HugeiconsIcon
-          icon={AlertCircleIcon}
+        <CircleAlert
           size={14}
           strokeWidth={1.75}
           className="text-destructive"

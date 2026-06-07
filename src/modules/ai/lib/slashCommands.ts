@@ -1,9 +1,6 @@
-import {
-  CheckListIcon,
-  ClaudeIcon,
-  SparklesIcon,
-} from "@hugeicons/core-free-icons";
+import { BotMessageSquare, ListChecks, Sparkles } from "lucide-react";
 import { usePlanStore } from "../store/planStore";
+import { useSkillsStore } from "../store/skillsStore";
 
 /**
  * Outcome of intercepting a slash command from the composer.
@@ -31,7 +28,7 @@ You are the orchestrator, not the implementer. Do not write the code yourself.
 Sharpen vague requests into precise engineering instructions; keep each agent prompt focused on one coherent unit of work.`;
 }
 
-const INIT_PROMPT = `Scan this workspace and produce TERAX.md at the workspace root with:
+const INIT_PROMPT = `Scan this workspace and produce PROJECT.md at the workspace root with:
 
 - One-paragraph project description.
 - Build / test / dev commands.
@@ -39,13 +36,13 @@ const INIT_PROMPT = `Scan this workspace and produce TERAX.md at the workspace r
 - Conventions worth knowing (naming, patterns, gotchas).
 - Paths to entry points.
 
-Use grep/glob/list_directory/read_file to explore. Cap TERAX.md under 200 lines. Use write_file to create it (will go through normal approval).`;
+Use grep/glob/list_directory/read_file to explore. Cap PROJECT.md under 200 lines. Use write_file to create it (will go through normal approval).`;
 
 export type SlashCommandMeta = {
   name: string;
   invocation: string;
   label: string;
-  icon: typeof SparklesIcon;
+  icon: typeof Sparkles;
 };
 
 export const SLASH_COMMANDS: Record<string, SlashCommandMeta> = {
@@ -53,27 +50,27 @@ export const SLASH_COMMANDS: Record<string, SlashCommandMeta> = {
     name: "init",
     invocation: "/init",
     label: "Initialize workspace",
-    icon: SparklesIcon,
+    icon: Sparkles,
   },
   plan: {
     name: "plan",
     invocation: "/plan",
     label: "Plan mode",
-    icon: CheckListIcon,
+    icon: ListChecks,
   },
   "claude-code": {
     name: "claude-code",
     invocation: "/claude-code",
     label: "Delegate to Claude Code",
-    icon: ClaudeIcon,
+    icon: BotMessageSquare,
   },
 };
 
-export const TERAX_CMD_RE =
-  /^<terax-command\s+name="([a-z0-9-]+)"(?:\s+state="([a-z]+)")?\s*\/>(?:\n+|$)/;
+export const FC_CMD_RE =
+  /^<fc-command\s+name="([a-z0-9-]+)"(?:\s+state="([a-z]+)")?\s*\/>(?:\n+|$)/;
 
 export function wrapWithCommandMarker(prompt: string, name: string): string {
-  return `<terax-command name="${name}" />\n\n${prompt}`;
+  return `<fc-command name="${name}" />\n\n${prompt}`;
 }
 
 export function tryRunSlashCommand(input: string): SlashOutcome {
@@ -115,7 +112,32 @@ export function tryRunSlashCommand(input: string): SlashOutcome {
         commandName: "claude-code",
       };
     }
-    default:
+    case "skills": {
+      const skills = useSkillsStore.getState().skills;
+      const enabled = skills.filter((s) => s.enabled);
+      if (enabled.length === 0) {
+        return { kind: "handled", toast: "No skills enabled. Enable skills in the Skills tab." };
+      }
+      const list = enabled
+        .map((s) => `/${s.name.toLowerCase().replace(/[^a-z0-9-]/g, "-")} — ${s.description || "No description"}`)
+        .join(", ");
+      return { kind: "handled", toast: `Skills: ${list}` };
+    }
+    default: {
+      const skills = useSkillsStore.getState().skills;
+      const skill = skills.find(
+        (s) =>
+          s.enabled &&
+          s.name.toLowerCase().replace(/[^a-z0-9-]/g, "-") === head,
+      );
+      if (skill) {
+        return {
+          kind: "send-prompt",
+          prompt: `<skill name="${skill.name}">\n${skill.instructions.trim()}\n</skill>\n\n${tail}`,
+          commandName: `skill:${skill.name}`,
+        };
+      }
       return { kind: "none" };
+    }
   }
 }

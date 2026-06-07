@@ -1,12 +1,8 @@
+import {  Copy, Minus, Square, X } from "lucide-react";
 import { USE_CUSTOM_WINDOW_CONTROLS } from "@/lib/platform";
 import { cn } from "@/lib/utils";
-import {
-  Cancel01Icon,
-  Copy01Icon,
-  MinusSignIcon,
-  SquareIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useState } from "react";
 
@@ -42,22 +38,22 @@ export function WindowControls({ closeOnly = false }: Props) {
       {!closeOnly && (
         <>
           <CtlButton ariaLabel="Minimize" onClick={() => void w.minimize()}>
-            <HugeiconsIcon icon={MinusSignIcon} size={12} strokeWidth={2} />
+            <Minus size={12} strokeWidth={2} />
           </CtlButton>
           <CtlButton
             ariaLabel={maximized ? "Restore" : "Maximize"}
             onClick={() => void w.toggleMaximize()}
           >
-            <HugeiconsIcon
-              icon={maximized ? Copy01Icon : SquareIcon}
-              size={12}
-              strokeWidth={2}
-            />
+            {maximized ? (
+              <Copy size={12} strokeWidth={2} />
+            ) : (
+              <Square size={12} strokeWidth={2} />
+            )}
           </CtlButton>
         </>
       )}
       <CtlButton ariaLabel="Close" onClick={() => void w.close()} danger>
-        <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={2} />
+        <X size={14} strokeWidth={2} />
       </CtlButton>
     </div>
   );

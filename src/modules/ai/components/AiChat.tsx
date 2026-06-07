@@ -1,3 +1,4 @@
+import {  ChevronRight, Code, File, Hash, Terminal } from "lucide-react";
 import {
   Conversation,
   ConversationContent,
@@ -21,15 +22,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowRight01Icon,
-  CodeIcon,
-  File01Icon,
-  HashtagIcon,
-  TerminalIcon,
-} from "@hugeicons/core-free-icons";
-import { SLASH_COMMANDS, TERAX_CMD_RE } from "../lib/slashCommands";
+
+
+import { SLASH_COMMANDS, FC_CMD_RE } from "../lib/slashCommands";
 import { Spinner } from "@/components/ui/spinner";
 import { useChatStore } from "../store/chatStore";
 import { sendMessage } from "../store/chatRuntime";
@@ -52,10 +47,10 @@ function CommandSnippet({ name }: { name: string }) {
       </div>
     );
   }
+  const Icon = meta.icon;
   return (
     <div className="inline-flex max-w-full items-center gap-2 rounded-md border border-border/50 bg-muted/40 px-2 py-1">
-      <HugeiconsIcon
-        icon={meta.icon}
+      <Icon
         size={12}
         strokeWidth={1.75}
         className="shrink-0 text-foreground"
@@ -140,18 +135,18 @@ const ContextChips = memo(function ContextChips({
 
 function chipIcon(c: ContextChip) {
   if (c.kind === "selection") {
+    const Icon = c.source === "editor" ? Code : Terminal;
     return (
-      <HugeiconsIcon
-        icon={c.source === "editor" ? CodeIcon : TerminalIcon}
+      <Icon
         size={10}
         strokeWidth={1.75}
       />
     );
   }
   if (c.kind === "file") {
-    return <HugeiconsIcon icon={File01Icon} size={10} strokeWidth={1.75} />;
+    return <File size={10} strokeWidth={1.75} />;
   }
-  return <HugeiconsIcon icon={HashtagIcon} size={10} strokeWidth={1.75} />;
+  return <Hash size={10} strokeWidth={1.75} />;
 }
 
 function chipLabel(c: ContextChip): string {
@@ -209,7 +204,7 @@ export function AiChatView({
       <Conversation>
         <ConversationContent>
           <ConversationEmptyState
-            title="Ask Terax anything"
+            title="Ask FeatherCode anything"
             description="Explain command output, fix errors, generate snippets, or run a task."
           />
         </ConversationContent>
@@ -341,7 +336,7 @@ const RenderedMessage = memo(function RenderedMessage({
       .map((p) => p.text)
       .join("\n");
 
-    const cmdMatch = rawText.match(TERAX_CMD_RE);
+    const cmdMatch = rawText.match(FC_CMD_RE);
     const commandName = cmdMatch?.[1] ?? null;
     const withoutCmd = cmdMatch ? rawText.slice(cmdMatch[0].length) : rawText;
     const stripped = stripUserContextBlocks(withoutCmd);
@@ -496,8 +491,7 @@ const ReadGroup = memo(function ReadGroup({ parts }: { parts: AnyPart[] }) {
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         )}
       >
-        <HugeiconsIcon
-          icon={ArrowRight01Icon}
+        <ChevronRight
           size={11}
           strokeWidth={2}
           className={cn(
@@ -505,8 +499,7 @@ const ReadGroup = memo(function ReadGroup({ parts }: { parts: AnyPart[] }) {
             "group-data-[state=open]/read:rotate-90",
           )}
         />
-        <HugeiconsIcon
-          icon={File01Icon}
+        <File
           size={13}
           strokeWidth={1.75}
           className="shrink-0 text-muted-foreground"
@@ -521,15 +514,14 @@ const ReadGroup = memo(function ReadGroup({ parts }: { parts: AnyPart[] }) {
           </span>
         ) : null}
       </CollapsibleTrigger>
-      <CollapsibleContent className="terax-collapsible-content border-t border-border/30">
+      <CollapsibleContent className="fc-collapsible-content border-t border-border/30">
         <ul className="flex flex-col gap-0.5 px-2 py-1.5">
           {paths.map((path) => (
             <li
               key={path}
               className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground"
             >
-              <HugeiconsIcon
-                icon={File01Icon}
+              <File
                 size={10}
                 strokeWidth={1.75}
                 className="shrink-0 opacity-60"
@@ -572,8 +564,7 @@ const ReadRow = memo(function ReadRow({ part }: { part: AnyPart }) {
             : "border border-muted-foreground/40 bg-transparent",
         )}
       />
-      <HugeiconsIcon
-        icon={File01Icon}
+      <File
         size={13}
         strokeWidth={1.75}
         className="shrink-0 text-muted-foreground"

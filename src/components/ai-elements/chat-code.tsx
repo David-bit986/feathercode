@@ -1,15 +1,11 @@
+import { CircleCheck, Copy, Terminal } from "lucide-react";
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/modules/ai/store/chatStore";
-import {
-  ArrowRight01Icon,
-  CheckmarkCircle01Icon,
-  CopyIcon,
-  TerminalIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { createContext, memo, useContext, useEffect, useRef, useState } from "react";
 
 import { Shimmer } from "./shimmer";
@@ -232,11 +228,7 @@ function RunInTerminalButton({ command }: { command: string }) {
       aria-label="Run in active terminal"
       title="Run in active terminal"
     >
-      <HugeiconsIcon
-        icon={sent ? TerminalIcon : ArrowRight01Icon}
-        size={11}
-        strokeWidth={1.75}
-      />
+      <Terminal size={11} strokeWidth={1.75} />
       <span>{sent ? "Sent" : "Run"}</span>
     </Button>
   );
@@ -268,11 +260,7 @@ function CopyButton({ text }: { text: string }) {
       className="size-5 shrink-0 text-muted-foreground hover:text-foreground"
       aria-label="Copy code"
     >
-      <HugeiconsIcon
-        icon={copied ? CheckmarkCircle01Icon : CopyIcon}
-        size={11}
-        strokeWidth={1.75}
-      />
+      {copied ? <CircleCheck size={11} strokeWidth={1.75} /> : <Copy size={11} strokeWidth={1.75} />}
     </Button>
   );
 }

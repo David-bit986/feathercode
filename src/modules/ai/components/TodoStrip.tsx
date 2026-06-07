@@ -1,3 +1,4 @@
+import {  Square, SquareCheck } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
@@ -8,8 +9,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { CheckmarkSquare02Icon, SquareIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useEffect } from "react";
 import type { Todo } from "../lib/todos";
 import { useTodosStore } from "../store/todoStore";
@@ -65,13 +66,10 @@ function TodoRow({ todo }: { todo: Todo }) {
       <span className="mt-[2px] inline-flex size-3.5 shrink-0 items-center justify-center">
         {isInProgress ? (
           <Spinner className="size-3" />
+        ) : todo.status === "completed" ? (
+          <SquareCheck size={12} strokeWidth={1.75} />
         ) : (
-          <HugeiconsIcon
-            icon={
-              todo.status === "completed" ? CheckmarkSquare02Icon : SquareIcon
-            }
-            strokeWidth={1.75}
-          />
+          <Square size={12} strokeWidth={1.75} />
         )}
       </span>
       <span

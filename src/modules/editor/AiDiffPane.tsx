@@ -1,3 +1,4 @@
+import { Check, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePreferencesStore } from "@/modules/settings/preferences";
@@ -5,8 +6,8 @@ import type { AiDiffStatus } from "@/modules/tabs";
 import { presentableDiff, unifiedMergeView } from "@codemirror/merge";
 import { EditorState, type Extension } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import { Cancel01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { useEffect, useMemo, useRef } from "react";
 import { buildSharedExtensions, languageCompartment } from "./lib/extensions";
@@ -157,10 +158,10 @@ export function AiDiffPane({
             {path}
           </span>
           <span className="flex shrink-0 items-center gap-1.5 text-[10.5px] tabular-nums">
-            <span className="text-emerald-600 dark:text-emerald-400">
+            <span className="text-primary">
               +{stats.added}
             </span>
-            <span className="text-rose-600 dark:text-rose-400">
+            <span className="text-destructive">
               −{stats.removed}
             </span>
           </span>
@@ -173,7 +174,7 @@ export function AiDiffPane({
               onClick={onAccept}
               className="h-7 gap-1.5"
             >
-              <HugeiconsIcon icon={Tick02Icon} size={13} strokeWidth={2} />
+              <Check size={13} strokeWidth={2} />
               Accept
             </Button>
             <Button
@@ -182,7 +183,7 @@ export function AiDiffPane({
               onClick={onReject}
               className="h-7 gap-1.5"
             >
-              <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={2} />
+              <X size={13} strokeWidth={2} />
               Reject
             </Button>
           </div>

@@ -10,6 +10,7 @@ import {
 import { useAgentsStore } from "../store/agentsStore";
 import { useChatStore } from "../store/chatStore";
 import { useSnippetsStore } from "../store/snippetsStore";
+import { useSkillsStore } from "../store/skillsStore";
 
 /**
  * Startup wiring for the AI subsystem: loads provider keys (and keeps them in
@@ -17,7 +18,7 @@ import { useSnippetsStore } from "../store/snippetsStore";
  * chat/agents/snippets stores, and fires any pending review for the active
  * session. Returns the two derived flags the shell needs.
  */
-export function useAiBootstrap(): {
+export function useAiBootstrap(explorerRoot?: string | null): {
   hasComposer: boolean;
   keysLoaded: boolean;
 } {
@@ -95,10 +96,11 @@ export function useAiBootstrap(): {
   }, [prefsHydrated, prefDefaultModel, setSelectedModelId]);
 
   useEffect(() => {
-    void hydrateSessions();
+    void hydrateSessions(explorerRoot);
     void useAgentsStore.getState().hydrate();
     void useSnippetsStore.getState().hydrate();
-  }, [hydrateSessions]);
+    void useSkillsStore.getState().hydrate();
+  }, [hydrateSessions, explorerRoot]);
 
   return { hasComposer, keysLoaded };
 }

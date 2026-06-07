@@ -1,3 +1,4 @@
+import { ArrowUp, Brain, Check, ChevronDown, CircleStop, Clock, Coins, Heart, LibraryBig, MessageCircle, Mic, Plug, Plus, Search, Settings, Star, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,37 +11,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { fmtShortcut, MOD_KEY } from "@/lib/platform";
 import { cn } from "@/lib/utils";
 import { openSettingsWindow } from "@/modules/settings/openSettingsWindow";
-import {
-  Add01Icon,
-  AiBookIcon,
-  AppleIcon,
-  ArrowDown01Icon,
-  ArrowUpIcon,
-  BrainIcon,
-  ChatGptIcon,
-  ClaudeIcon,
-  Clock01Icon,
-  CoinsDollarIcon,
-  ComputerIcon,
-  CpuIcon,
-  DeepseekIcon,
-  FavouriteIcon,
-  FlashIcon,
-  GlobeIcon,
-  GoogleGeminiIcon,
-  Grok02Icon,
-  MistralIcon,
-  Message01Icon,
-  Mic01Icon,
-  PlugIcon,
-  ServerStack01Icon,
-  Search01Icon,
-  Settings01Icon,
-  StarIcon,
-  StopCircleIcon,
-  Tick01Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useMemo, useRef, useState } from "react";
 import {
   compatModelIdForEndpoint,
@@ -55,26 +27,11 @@ import {
   type ModelInfo,
   type ProviderId,
 } from "../config";
+import { ProviderLogo } from "../components/ProviderLogo";
 import { ACCEPTED_FILES, useComposer } from "../lib/composer";
 import { toggleFavoriteModel } from "../lib/modelPrefs";
 import { useChatStore } from "../store/chatStore";
 import { usePreferencesStore } from "@/modules/settings/preferences";
-
-const PROVIDER_ICON = {
-  openai: ChatGptIcon,
-  anthropic: ClaudeIcon,
-  google: GoogleGeminiIcon,
-  xai: Grok02Icon,
-  cerebras: CpuIcon,
-  groq: FlashIcon,
-  deepseek: DeepseekIcon,
-  mistral: MistralIcon,
-  openrouter: GlobeIcon,
-  "openai-compatible": PlugIcon,
-  lmstudio: ComputerIcon,
-  mlx: AppleIcon,
-  ollama: ServerStack01Icon,
-} as const satisfies Record<ProviderId, typeof ChatGptIcon>;
 
 export function AiOpenButton({ onOpen }: { onOpen: () => void }) {
   return (
@@ -94,11 +51,9 @@ export function AiOpenButton({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-export function AiStatusBarControls() {
+export function AiStatusBarControls({ minimal = false }: { minimal?: boolean }) {
   const c = useComposer();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const openMini = useChatStore((s) => s.openMini);
-  const miniOpen = useChatStore((s) => s.mini.open);
   const closePanel = useChatStore((s) => s.closePanel);
 
   return (
@@ -115,91 +70,93 @@ export function AiStatusBarControls() {
         }}
       />
 
-      <IconBtn
-        title="Attach file or image"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={c.isBusy}
-      >
-        <HugeiconsIcon icon={Add01Icon} size={13} strokeWidth={2} />
-      </IconBtn>
+      {!minimal && (
+        <>
+          <IconBtn
+            title="Attach file or image"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={c.isBusy}
+          >
+            <Plus size={13} strokeWidth={2} />
+          </IconBtn>
 
-      {c.voice.supported && (
-        <IconBtn
-          title={
-            !c.voice.hasKey
-              ? "Voice needs an OpenAI key"
-              : c.voice.recording
-                ? "Stop & transcribe"
-                : c.voice.transcribing
-                  ? "Transcribing…"
-                  : "Voice input"
-          }
-          onClick={() =>
-            c.voice.recording ? c.voice.stop() : void c.voice.start()
-          }
-          disabled={c.isBusy || c.voice.transcribing || !c.voice.hasKey}
-          className={cn(
-            c.voice.recording &&
-            "bg-destructive/10 text-destructive hover:bg-destructive/15",
+          {c.voice.supported && (
+            <IconBtn
+              title={
+                !c.voice.hasKey
+                  ? "Voice needs an OpenAI key"
+                  : c.voice.recording
+                    ? "Stop & transcribe"
+                    : c.voice.transcribing
+                      ? "Transcribing…"
+                      : "Voice input"
+              }
+              onClick={() =>
+                c.voice.recording ? c.voice.stop() : void c.voice.start()
+              }
+              disabled={c.isBusy || c.voice.transcribing || !c.voice.hasKey}
+              className={cn(
+                c.voice.recording &&
+                "bg-destructive/10 text-destructive hover:bg-destructive/15",
+              )}
+            >
+              {c.voice.recording ? (
+                <span className="size-2 animate-pulse rounded-full bg-destructive" />
+              ) : c.voice.transcribing ? (
+                <Spinner className="size-3" />
+              ) : (
+                <Mic size={13} strokeWidth={1.75} />
+              )}
+            </IconBtn>
           )}
-        >
-          {c.voice.recording ? (
-            <span className="size-2 animate-pulse rounded-full bg-destructive" />
-          ) : c.voice.transcribing ? (
-            <Spinner className="size-3" />
-          ) : (
-            <HugeiconsIcon icon={Mic01Icon} size={13} strokeWidth={1.75} />
-          )}
-        </IconBtn>
+        </>
       )}
 
+      <SessionDropdown />
       <ModelDropdown />
 
-      <span className="mx-1 h-8 w-px bg-border" aria-hidden />
-      <Button
-        onClick={closePanel}
-        title="Close AI panel"
-        size="xs"
-        variant="ghost"
-        aria-label="Close AI panel"
-        className="text-[11px] text-foreground/85 px-1"
-      >
-        <Kbd className="h-4 gap-px px-2 font-mono text-[11px]">
-          {fmtShortcut(MOD_KEY, "I")}
-        </Kbd>
-      </Button>
-      <IconBtn
-        title={miniOpen ? "Mini-window open" : "Open conversation"}
-        onClick={openMini}
-        disabled={miniOpen}
-      >
-        <HugeiconsIcon icon={Message01Icon} size={13} strokeWidth={1.75} />
-      </IconBtn>
+      {!minimal && (
+        <>
+          <span className="mx-1 h-8 w-px bg-border" aria-hidden />
+          <Button
+            onClick={closePanel}
+            title="Close AI panel"
+            size="xs"
+            variant="ghost"
+            aria-label="Close AI panel"
+            className="text-[11px] text-foreground/85 px-1"
+          >
+            <Kbd className="h-4 gap-px px-2 font-mono text-[11px]">
+              {fmtShortcut(MOD_KEY, "I")}
+            </Kbd>
+          </Button>
 
-      {c.isBusy ? (
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          onClick={c.stop}
-          className="size-6"
-          aria-label="Stop"
-          title="Stop"
-        >
-          <HugeiconsIcon icon={StopCircleIcon} size={13} strokeWidth={1.75} />
-        </Button>
-      ) : (
-        <Button
-          type="button"
-          size="icon"
-          onClick={c.submit}
-          disabled={!c.canSend}
-          className="h-5.5 w-7.5 ml-1"
-          aria-label="Send"
-          title="Send (Enter)"
-        >
-          <HugeiconsIcon icon={ArrowUpIcon} size={13} strokeWidth={1.75} />
-        </Button>
+          {c.isBusy ? (
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={c.stop}
+              className="size-6"
+              aria-label="Stop"
+              title="Stop"
+            >
+              <CircleStop size={13} strokeWidth={1.75} />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="icon"
+              onClick={c.submit}
+              disabled={!c.canSend}
+              className="h-5.5 w-7.5 ml-1"
+              aria-label="Send"
+              title="Send (Enter)"
+            >
+              <ArrowUp size={13} strokeWidth={1.75} />
+            </Button>
+          )}
+        </>
       )}
     </div>
   );
@@ -295,7 +252,7 @@ function ModelDropdown() {
             "h-5.5 gap-1 rounded-md px-1.5 my-1 text-xs hover:bg-accent hover:text-foreground",
             currentProviderHasKey
               ? "text-muted-foreground"
-              : "text-amber-600 dark:text-amber-400",
+              : "text-muted-foreground",
           )}
           title={
             currentProviderHasKey
@@ -304,8 +261,7 @@ function ModelDropdown() {
           }
         >
           {current.label}
-          <HugeiconsIcon
-            icon={ArrowDown01Icon}
+          <ChevronDown
             size={11}
             strokeWidth={2}
             className="opacity-70"
@@ -322,8 +278,7 @@ function ModelDropdown() {
       >
         {/* Search */}
         <div className="flex items-center gap-2.5 border-b border-border/70 px-3 py-2.5">
-          <HugeiconsIcon
-            icon={Search01Icon}
+          <Search
             size={16}
             strokeWidth={1.75}
             className="shrink-0 text-muted-foreground/70"
@@ -342,20 +297,20 @@ function ModelDropdown() {
         <div className="flex items-center gap-0.5 border-b border-border/70 px-2 py-1.5">
           <TabButton
             label="All"
-            icon={AiBookIcon}
+            icon={LibraryBig}
             active={tab === "all"}
             onClick={() => setTab("all")}
           />
           <TabButton
             label="Favorites"
-            icon={FavouriteIcon}
+            icon={Heart}
             active={tab === "favorites"}
             onClick={() => setTab("favorites")}
             count={favoriteIds.length || undefined}
           />
           <TabButton
             label="Recent"
-            icon={Clock01Icon}
+            icon={Clock}
             active={tab === "recent"}
             onClick={() => setTab("recent")}
             count={recentIds.length || undefined}
@@ -366,17 +321,17 @@ function ModelDropdown() {
           {/* Provider sidebar — configured first, unconfigured muted, no dividers. */}
           <div className="flex w-11 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-border/70 bg-muted/20 py-1.5">
             <ProviderPill
-              icon={AiBookIcon}
+              icon={LibraryBig}
               title="All providers"
               active={activeProvider === null}
               onClick={() => setActiveProvider(null)}
             />
             {[...sortedProviders.configured, ...sortedProviders.unconfigured].map(
               (p) => (
-                <ProviderPill
-                  key={p.id}
-                  icon={PROVIDER_ICON[p.id]}
-                  title={
+            <ProviderPill
+              key={p.id}
+              provider={p.id}
+              title={
                     hasKeyFor(p.id)
                       ? p.label
                       : `${p.label} — not configured`
@@ -389,7 +344,7 @@ function ModelDropdown() {
             )}
             {customEndpoints.length > 0 && (
               <ProviderPill
-                icon={PlugIcon}
+                icon={Plug}
                 title="OpenAI Compatible"
                 active={activeProvider === COMPAT_PROVIDER_ID}
                 onClick={() => setActiveProvider(COMPAT_PROVIDER_ID)}
@@ -401,7 +356,7 @@ function ModelDropdown() {
           <div className="min-h-0 flex-1 overflow-y-auto py-1">
             {activeProvider === COMPAT_PROVIDER_ID && (
               <div className="flex items-center gap-1.5 px-3 pt-1 pb-1.5 text-[11px] font-medium tracking-tight text-muted-foreground/90">
-                <HugeiconsIcon icon={PlugIcon} size={13} strokeWidth={1.75} />
+                <Plug size={13} strokeWidth={1.75} />
                 <span>OpenAI Compatible</span>
               </div>
             )}
@@ -454,13 +409,13 @@ function ModelDropdown() {
 
 function TabButton({
   label,
-  icon,
+  icon: Icon,
   active,
   count,
   onClick,
 }: {
   label: string;
-  icon: typeof AiBookIcon;
+  icon: typeof LibraryBig;
   active: boolean;
   count?: number;
   onClick: () => void;
@@ -476,7 +431,7 @@ function TabButton({
           : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
       )}
     >
-      <HugeiconsIcon icon={icon} size={12} strokeWidth={1.75} />
+      <Icon size={12} strokeWidth={1.75} />
       {label}
       {count != null ? (
         <span className="rounded-full bg-muted/60 px-1.5 text-[9.5px] tabular-nums text-muted-foreground">
@@ -488,13 +443,15 @@ function TabButton({
 }
 
 function ProviderPill({
-  icon,
+  icon: Icon,
+  provider,
   title,
   active,
   muted,
   onClick,
 }: {
-  icon: typeof AiBookIcon;
+  icon?: typeof LibraryBig;
+  provider?: ProviderId;
   title: string;
   active: boolean;
   muted?: boolean;
@@ -514,7 +471,11 @@ function ProviderPill({
             : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
       )}
     >
-      <HugeiconsIcon icon={icon} size={16} strokeWidth={1.5} />
+      {provider ? (
+        <ProviderLogo provider={provider} size={16} />
+      ) : Icon ? (
+        <Icon size={16} strokeWidth={1.5} />
+      ) : null}
     </button>
   );
 }
@@ -524,11 +485,7 @@ function ProviderHeader({ providerId }: { providerId: ProviderId }) {
   if (!p) return null;
   return (
     <div className="flex items-center gap-1.5 px-3 pt-1 pb-1.5 text-[11px] font-medium tracking-tight text-muted-foreground/90">
-      <HugeiconsIcon
-        icon={PROVIDER_ICON[p.id]}
-        size={13}
-        strokeWidth={1.75}
-      />
+      <ProviderLogo provider={providerId} size={13} />
       <span>{p.label}</span>
     </div>
   );
@@ -543,7 +500,7 @@ function ProviderConfigureCTA({ providerId }: { providerId: ProviderId }) {
       onClick={() => void openSettingsWindow("models")}
       className="group mx-2 mb-1 flex w-[calc(100%-1rem)] items-center gap-2 rounded-md border border-dashed border-border/70 bg-muted/20 px-3 py-2 text-left text-[11px] text-muted-foreground transition-colors hover:border-border hover:bg-accent/40 hover:text-foreground"
     >
-      <HugeiconsIcon icon={Settings01Icon} size={13} strokeWidth={1.75} />
+      <Settings size={13} strokeWidth={1.75} />
       <span className="flex-1 truncate">
         Configure {p.label} to use these models.
       </span>
@@ -598,8 +555,7 @@ function ModelRow({
             : "text-muted-foreground/40 hover:text-amber-500",
         )}
       >
-        <HugeiconsIcon
-          icon={StarIcon}
+        <Star
           size={12}
           strokeWidth={favorite ? 2 : 1.75}
           className={favorite ? "fill-amber-500" : ""}
@@ -607,11 +563,9 @@ function ModelRow({
       </button>
 
       {showProviderIcon ? (
-        <HugeiconsIcon
-          icon={PROVIDER_ICON[model.provider]}
+        <ProviderLogo
+          provider={model.provider as ProviderId}
           size={13}
-          strokeWidth={1.5}
-          className="shrink-0 text-muted-foreground/70"
         />
       ) : null}
 
@@ -627,8 +581,7 @@ function ModelRow({
       <CapabilityBars caps={model.capabilities} />
 
       {selected ? (
-        <HugeiconsIcon
-          icon={Tick01Icon}
+        <Check
           size={13}
           strokeWidth={2}
           className="shrink-0 text-foreground"
@@ -641,10 +594,10 @@ function ModelRow({
 function CapabilityBars({ caps }: { caps: ModelCapabilities }) {
   return (
     <div className="ml-auto flex items-center gap-1.5">
-      <CapBar icon={BrainIcon} value={caps.intelligence} label="Intelligence" />
-      <CapBar icon={FlashIcon} value={caps.speed} label="Speed" />
+      <CapBar icon={Brain} value={caps.intelligence} label="Intelligence" />
+      <CapBar icon={Zap} value={caps.speed} label="Speed" />
       <CapBar
-        icon={CoinsDollarIcon}
+        icon={Coins}
         value={caps.cost}
         label="Affordability"
       />
@@ -653,11 +606,11 @@ function CapabilityBars({ caps }: { caps: ModelCapabilities }) {
 }
 
 function CapBar({
-  icon,
+  icon: Icon,
   value,
   label,
 }: {
-  icon: typeof AiBookIcon;
+  icon: typeof LibraryBig;
   value: number;
   label: string;
 }) {
@@ -666,8 +619,7 @@ function CapBar({
       className="flex items-center gap-0.5"
       title={`${label}: ${value}/5`}
     >
-      <HugeiconsIcon
-        icon={icon}
+      <Icon
         size={10}
         strokeWidth={1.75}
         className="text-muted-foreground/60"
@@ -715,5 +667,91 @@ function IconBtn({
     >
       {children}
     </Button>
+  );
+}
+
+function SessionDropdown() {
+  const sessions = useChatStore((s) => s.sessions);
+  const activeId = useChatStore((s) => s.activeSessionId);
+  const switchSession = useChatStore((s) => s.switchSession);
+  const newSession = useChatStore((s) => s.newSession);
+  const deleteSession = useChatStore((s) => s.deleteSession);
+  const [open, setOpen] = useState(false);
+
+  const sorted = useMemo(
+    () => [...sessions].sort((a, b) => b.updatedAt - a.updatedAt),
+    [sessions],
+  );
+  const active = sorted.find((s) => s.id === activeId);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "flex items-center gap-1.5 h-6 rounded border border-border/60 bg-card px-2 text-[11px]",
+            "text-muted-foreground transition-colors hover:border-border hover:bg-accent hover:text-foreground",
+          )}
+          title="Chat history"
+        >
+          <MessageCircle size={12} strokeWidth={1.75} />
+          <span className="max-w-32 truncate">
+            {active?.title ?? "No chats"}
+          </span>
+          <ChevronDown size={10} strokeWidth={2} className="opacity-50" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56 p-1">
+        <div className="flex items-center justify-between px-2 py-0.5">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+            Chat History
+          </span>
+          <button
+            type="button"
+            onClick={() => { newSession(); setOpen(false); }}
+            className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-accent"
+            title="New chat"
+          >
+            <Plus size={14} strokeWidth={2} />
+          </button>
+        </div>
+        <div className="max-h-64 overflow-y-auto">
+          {sorted.map((s) => (
+            <div
+              key={s.id}
+              className={cn(
+                "group flex items-center gap-1 rounded px-1 py-0.5",
+                s.id === activeId ? "bg-accent" : "",
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => { switchSession(s.id); setOpen(false); }}
+                className={cn(
+                  "flex-1 text-left truncate rounded px-1 py-0.5 text-[11px] transition-colors",
+                  "hover:bg-accent hover:text-foreground",
+                  s.id === activeId ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {s.title}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteSession(s.id);
+                  if (sorted.length <= 1) setOpen(false);
+                }}
+                className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Delete chat"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

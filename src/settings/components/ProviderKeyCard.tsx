@@ -1,18 +1,12 @@
+import {  ArrowUpRight, CircleCheckBig, Eye, EyeOff, FileEdit, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import type { ProviderInfo } from "@/modules/ai/config";
-import {
-  ArrowUpRight01Icon,
-  Cancel01Icon,
-  CheckmarkCircle02Icon,
-  Edit02Icon,
-  ViewIcon,
-  ViewOffSlashIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useState } from "react";
 import { ProviderIcon } from "./ProviderIcon";
@@ -80,8 +74,7 @@ export function ProviderKeyCard({
             variant="outline"
             className="ml-1 h-4 gap-1 border-border/60 bg-muted/40 px-1.5 text-[10px] font-normal text-muted-foreground"
           >
-            <HugeiconsIcon
-              icon={CheckmarkCircle02Icon}
+            <CircleCheckBig
               size={9}
               strokeWidth={2}
             />
@@ -94,7 +87,7 @@ export function ProviderKeyCard({
           className="ml-auto inline-flex items-center gap-0.5 text-[10.5px] text-muted-foreground transition-colors hover:text-foreground"
         >
           Get key
-          <HugeiconsIcon icon={ArrowUpRight01Icon} size={11} strokeWidth={1.75} />
+          <ArrowUpRight size={11} strokeWidth={1.75} />
         </button>
         {onRemove ? (
           <Button
@@ -104,7 +97,7 @@ export function ProviderKeyCard({
             title="Remove provider"
             className="size-7 text-muted-foreground hover:text-destructive"
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={1.75} />
+            <X size={12} strokeWidth={1.75} />
           </Button>
         ) : null}
       </div>
@@ -148,11 +141,11 @@ export function ProviderKeyCard({
                 className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground"
                 aria-label={reveal ? "Hide key" : "Show key"}
               >
-                <HugeiconsIcon
-                  icon={reveal ? ViewOffSlashIcon : ViewIcon}
-                  size={12}
-                  strokeWidth={1.75}
-                />
+                {reveal ? (
+                  <EyeOff size={12} strokeWidth={1.75} />
+                ) : (
+                  <Eye size={12} strokeWidth={1.75} />
+                )}
               </button>
             </div>
             <Button
@@ -185,7 +178,7 @@ export function ProviderKeyCard({
             title="Replace"
             className="size-7"
           >
-            <HugeiconsIcon icon={Edit02Icon} size={12} strokeWidth={1.75} />
+            <FileEdit size={12} strokeWidth={1.75} />
           </Button>
           {!onRemove ? (
             <Button
@@ -195,7 +188,7 @@ export function ProviderKeyCard({
               title="Remove"
               className="size-7 text-muted-foreground hover:text-destructive"
             >
-              <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={1.75} />
+              <X size={12} strokeWidth={1.75} />
             </Button>
           ) : null}
         </div>

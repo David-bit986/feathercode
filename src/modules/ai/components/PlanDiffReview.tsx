@@ -1,14 +1,8 @@
+import {  Check, ChevronDown, FilePenLine, FilePlus, FolderPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  ArrowDown01Icon,
-  Cancel01Icon,
-  FileEditIcon,
-  FilePlusIcon,
-  FolderAddIcon,
-  Tick02Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useState } from "react";
 import { usePlanStore, type QueuedEdit } from "../store/planStore";
 
@@ -74,7 +68,7 @@ export function PlanDiffReview() {
             onClick={() => clear()}
             disabled={busy}
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2} />
+            <X size={12} strokeWidth={2} />
             Discard all
           </Button>
           <Button
@@ -84,7 +78,7 @@ export function PlanDiffReview() {
             onClick={onApply}
             disabled={busy}
           >
-            <HugeiconsIcon icon={Tick02Icon} size={12} strokeWidth={2} />
+            <Check size={12} strokeWidth={2} />
             Apply {queue.length}
           </Button>
         </div>
@@ -112,10 +106,10 @@ function PlanRow({
     ? null
     : diffStats(item.originalContent, item.proposedContent);
   const Icon = isDir
-    ? FolderAddIcon
+    ? FolderPlus
     : isNew
-      ? FilePlusIcon
-      : FileEditIcon;
+      ? FilePlus
+      : FilePenLine;
 
   return (
     <li className="group/row overflow-hidden rounded-md border border-border/50 bg-card">
@@ -131,10 +125,9 @@ function PlanRow({
           )}
           aria-label="Toggle diff"
         >
-          <HugeiconsIcon icon={ArrowDown01Icon} size={11} strokeWidth={1.75} />
+          <ChevronDown size={11} strokeWidth={1.75} />
         </button>
-        <HugeiconsIcon
-          icon={Icon}
+        <Icon
           size={13}
           strokeWidth={1.75}
           className="mt-0.5 shrink-0 text-muted-foreground"
@@ -145,7 +138,7 @@ function PlanRow({
               {basename(item.path)}
             </span>
             {isNew ? (
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
+              <span className="text-[10px] text-primary">
                 new
               </span>
             ) : null}
@@ -155,7 +148,7 @@ function PlanRow({
           </div>
           {stats ? (
             <div className="mt-0.5 flex items-center gap-2 text-[10px] tabular-nums">
-              <span className="text-emerald-600 dark:text-emerald-400">
+              <span className="text-primary">
                 +{stats.added}
               </span>
               <span className="text-destructive">−{stats.removed}</span>
@@ -177,7 +170,7 @@ function PlanRow({
           onClick={onReject}
           aria-label="Reject"
         >
-          <HugeiconsIcon icon={Cancel01Icon} size={11} strokeWidth={1.75} />
+          <X size={11} strokeWidth={1.75} />
         </Button>
       </div>
       {open && !isDir ? (
@@ -233,7 +226,7 @@ function UnifiedDiffPreview({
             className={cn(
               "flex whitespace-pre",
               l.kind === "add"
-                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                ? "bg-primary/10 text-primary"
                 : "bg-destructive/10 text-destructive",
             )}
           >

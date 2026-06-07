@@ -77,10 +77,6 @@ const IDLE_META: AgentMeta = {
   compactionNotice: null,
 };
 
-export type MiniState = {
-  open: boolean;
-};
-
 export type PendingSelection = {
   id: string;
   text: string;
@@ -115,11 +111,6 @@ type StoreState = {
   selectedModelId: string;
   setSelectedModelId: (id: string) => void;
 
-  mini: MiniState;
-  openMini: () => void;
-  closeMini: () => void;
-  toggleMini: () => void;
-
   panelOpen: boolean;
   openPanel: () => void;
   closePanel: () => void;
@@ -139,10 +130,11 @@ type StoreState = {
   resetAgentMeta: () => void;
 
   // Sessions
+  currentProjectPath: string | null;
   sessionsHydrated: boolean;
   sessions: SessionMeta[];
   activeSessionId: string | null;
-  hydrateSessions: () => Promise<void>;
+  hydrateSessions: (projectPath?: string | null) => Promise<void>;
   newSession: () => string;
   switchSession: (id: string) => void;
   deleteSession: (id: string) => void;
@@ -197,7 +189,8 @@ function flushPersistEntry(id: string) {
   if (!entry) return;
   clearTimeout(entry.timer);
   pendingPersist.delete(id);
-  void saveMessages(id, entry.latest);
+  const pp = useChatStore.getState().currentProjectPath;
+  if (pp) void saveMessages(pp, id, entry.latest);
 }
 
 export function flushPersist(id?: string): void {
@@ -233,11 +226,6 @@ export const useChatStore = create<StoreState>((set, get) => ({
     set({ selectedModelId: id });
     void pushRecentModel(id);
   },
-
-  mini: { open: false },
-  openMini: () => set({ mini: { open: true } }),
-  closeMini: () => set({ mini: { open: false } }),
-  toggleMini: () => set((s) => ({ mini: { open: !s.mini.open } })),
 
   panelOpen: false,
   openPanel: () => set({ panelOpen: true }),
@@ -280,17 +268,17 @@ export const useChatStore = create<StoreState>((set, get) => ({
     set((s) => ({ agentMeta: { ...s.agentMeta, ...patch } })),
   resetAgentMeta: () => set({ agentMeta: IDLE_META }),
 
+  currentProjectPath: null,
   sessionsHydrated: false,
   sessions: [],
   activeSessionId: null,
 
-  hydrateSessions: async () => {
-    if (get().sessionsHydrated) return;
-    const { sessions } = await loadAll();
+  hydrateSessions: async (projectPath) => {
+    if (!projectPath) return;
+    const { currentProjectPath } = get();
+    if (currentProjectPath === projectPath && get().sessionsHydrated) return;
+    const { sessions } = await loadAll(projectPath);
 
-    // Reuse the most recent untitled "New chat" session if one exists from
-    // the previous run — no point stacking empty placeholder sessions every
-    // launch. Otherwise prepend a fresh one.
     const reusable = sessions[0]?.title === "New chat" ? sessions[0] : null;
     let nextSessions: SessionMeta[];
     let freshId: string;
@@ -304,13 +292,15 @@ export const useChatStore = create<StoreState>((set, get) => ({
         title: "New chat",
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        projectPath: projectPath ?? undefined,
       };
       nextSessions = [fresh, ...sessions];
-      void saveSessionsList(nextSessions);
+      void saveSessionsList(projectPath, nextSessions);
     }
-    void saveActiveId(freshId);
+    void saveActiveId(projectPath, freshId);
 
     set({
+      currentProjectPath: projectPath,
       sessions: nextSessions,
       activeSessionId: freshId,
       sessionsHydrated: true,
@@ -319,16 +309,20 @@ export const useChatStore = create<StoreState>((set, get) => ({
 
   newSession: () => {
     const id = newSessionId();
+    const projectPath = get().currentProjectPath;
     const meta: SessionMeta = {
       id,
       title: "New chat",
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      projectPath: projectPath ?? undefined,
     };
     const next = [meta, ...get().sessions];
     set({ sessions: next, activeSessionId: id, agentMeta: IDLE_META });
-    void saveSessionsList(next);
-    void saveActiveId(id);
+    if (projectPath) {
+      void saveSessionsList(projectPath, next);
+      void saveActiveId(projectPath, id);
+    }
     return id;
   },
 
@@ -336,23 +330,28 @@ export const useChatStore = create<StoreState>((set, get) => ({
     if (get().activeSessionId === id) return;
     if (!get().sessions.some((s) => s.id === id)) return;
 
-    // Lazily seed the chat with persisted messages the first time we open
-    // this session. Subsequent switches reuse the cached Chat instance.
     const flip = () => {
       set({ activeSessionId: id, agentMeta: IDLE_META });
-      void saveActiveId(id);
+      const pp = get().currentProjectPath;
+      if (pp) void saveActiveId(pp, id);
     };
     if (chats.has(id) || seedMessages.has(id)) {
       flip();
       return;
     }
-    void loadMessages(id).then((m) => {
+    const projectPath = get().currentProjectPath;
+    if (!projectPath) {
+      flip();
+      return;
+    }
+    void loadMessages(projectPath, id).then((m) => {
       if (m && m.length > 0 && !chats.has(id)) seedMessages.set(id, m);
       flip();
     });
   },
 
   deleteSession: (id) => {
+    const projectPath = get().currentProjectPath;
     const remaining = get().sessions.filter((s) => s.id !== id);
     chats.get(id)?.stop();
     chats.delete(id);
@@ -362,7 +361,7 @@ export const useChatStore = create<StoreState>((set, get) => ({
       clearTimeout(pend.timer);
       pendingPersist.delete(id);
     }
-    void deleteSessionData(id);
+    if (projectPath) void deleteSessionData(projectPath, id);
     void useTodosStore.getState().clearSession(id);
 
     if (remaining.length === 0) {
@@ -371,18 +370,24 @@ export const useChatStore = create<StoreState>((set, get) => ({
         title: "New chat",
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        projectPath: projectPath ?? undefined,
       };
-      set({ sessions: [fresh], activeSessionId: fresh.id });
-      void saveSessionsList([fresh]);
-      void saveActiveId(fresh.id);
+      const next = [fresh];
+      set({ sessions: next, activeSessionId: fresh.id });
+      if (projectPath) {
+        void saveSessionsList(projectPath, next);
+        void saveActiveId(projectPath, fresh.id);
+      }
       return;
     }
 
     const wasActive = get().activeSessionId === id;
     const nextActive = wasActive ? remaining[0].id : get().activeSessionId;
     set({ sessions: remaining, activeSessionId: nextActive });
-    void saveSessionsList(remaining);
-    if (wasActive) void saveActiveId(nextActive);
+    if (projectPath) {
+      void saveSessionsList(projectPath, remaining);
+      if (wasActive) void saveActiveId(projectPath, nextActive);
+    }
   },
 
   renameSession: (id, title) => {
@@ -390,10 +395,12 @@ export const useChatStore = create<StoreState>((set, get) => ({
       s.id === id ? { ...s, title, updatedAt: Date.now() } : s,
     );
     set({ sessions: next });
-    void saveSessionsList(next);
+    const pp = get().currentProjectPath;
+    if (pp) void saveSessionsList(pp, next);
   },
 
   persistMessages: (id, messages) => {
+    const projectPath = get().currentProjectPath;
     // Debounce the message-blob write so streaming doesn't pound the store.
     const existing = pendingPersist.get(id);
     if (existing) clearTimeout(existing.timer);
@@ -401,7 +408,7 @@ export const useChatStore = create<StoreState>((set, get) => ({
       const entry = pendingPersist.get(id);
       if (!entry) return;
       pendingPersist.delete(id);
-      void saveMessages(id, entry.latest);
+      if (projectPath) void saveMessages(projectPath, id, entry.latest);
     }, PERSIST_DEBOUNCE_MS);
     pendingPersist.set(id, { latest: messages, timer });
 
@@ -419,7 +426,7 @@ export const useChatStore = create<StoreState>((set, get) => ({
       s.id === id ? { ...s, title: nextTitle, updatedAt: Date.now() } : s,
     );
     set({ sessions: next });
-    void saveSessionsList(next);
+    if (projectPath) void saveSessionsList(projectPath, next);
   },
 }));
 

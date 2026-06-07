@@ -2,7 +2,6 @@ export {
   AgentRunBridge,
   AiInputBar,
   AiInputBarConnect,
-  AiMiniWindow,
   SelectionAskAi,
 } from "./components/lazy";
 export { AgentStatusPill } from "./components/AgentStatusPill";
@@ -29,6 +28,27 @@ export {
   type AgentMeta,
   type AgentRunStatus,
 } from "./store/chatStore";
+export {
+  useArtifactsStore,
+  generateArtifactId,
+  type Artifact,
+  type ArtifactKind,
+  type ArtifactStatus,
+  type ArtifactContent,
+} from "./store/artifactsStore";
+export {
+  useSchedulerStore,
+  generateTaskId,
+  type ScheduledTask,
+  type Schedule,
+} from "./store/schedulerStore";
+export {
+  useMcpStore,
+  generateMcpServerId,
+  type McpServer,
+  type McpServerStatus,
+} from "./store/mcpStore";
+export { useAgentPool, useAgentSubscription } from "./hooks/useAgentPool";
 // Heavy chat runtime (@ai-sdk/react + ai SDK) is intentionally NOT re-exported
 // here: this barrel is eagerly imported by App, and a static re-export would
 // pull the whole SDK into the startup graph. Import from ./store/chatRuntime.

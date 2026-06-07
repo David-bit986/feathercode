@@ -1,3 +1,4 @@
+import { Settings } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +9,8 @@ import {
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Settings01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { usePreferencesStore } from "@/modules/settings/preferences";
 import { openSettingsWindow } from "@/modules/settings/openSettingsWindow";
 import {
@@ -38,7 +39,7 @@ export function ShortcutsDialog({ open, onOpenChange }: Props) {
           <div className="flex flex-col gap-1.5">
             <DialogTitle>Keyboard shortcuts</DialogTitle>
             <DialogDescription>
-              Quick reference for Terax controls.
+              Quick reference for FeatherCode controls.
             </DialogDescription>
           </div>
           <Button
@@ -47,7 +48,7 @@ export function ShortcutsDialog({ open, onOpenChange }: Props) {
             className="h-8 gap-1.5 px-2.5 text-[11px] font-medium"
             onClick={onOpenSettings}
           >
-            <HugeiconsIcon icon={Settings01Icon} size={12} strokeWidth={2} />
+            <Settings size={12} strokeWidth={2} />
             <span>Customize</span>
           </Button>
         </DialogHeader>

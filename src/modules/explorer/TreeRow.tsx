@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -6,8 +7,8 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { cn } from "@/lib/utils";
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { memo, useState } from "react";
 import { InlineInput } from "./InlineInput";
 import {
@@ -106,8 +107,7 @@ function EntryRowImpl(props: EntryRowProps) {
           >
             <span className="flex size-3.5 shrink-0 items-center justify-center text-muted-foreground">
               {isDir ? (
-                <HugeiconsIcon
-                  icon={ArrowRight01Icon}
+                <ChevronRight
                   size={12}
                   strokeWidth={2.25}
                   className={cn(

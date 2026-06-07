@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 "use client";
 
 import {
@@ -6,8 +7,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
 import type { ComponentProps, ReactNode } from "react";
 import {
@@ -179,8 +180,7 @@ export const ReasoningTrigger = memo(
         {children ?? (
           <>
             {getThinkingMessage(isStreaming, duration)}
-            <HugeiconsIcon
-              icon={ArrowDown01Icon}
+            <ChevronDown
               size={11}
               strokeWidth={1.75}
               className={cn(

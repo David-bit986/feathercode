@@ -1,6 +1,7 @@
+import {} from "lucide-react";
 import { PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { HugeiconsIcon } from "@hugeicons/react";
+
 import type { SlashCommandMeta } from "../lib/slashCommands";
 import type { Snippet } from "../lib/snippets";
 
@@ -63,8 +64,7 @@ export function SnippetPickerContent({
                             : "hover:bg-accent/60",
                         )}
                       >
-                        <HugeiconsIcon
-                          icon={c.icon}
+                        <c.icon
                           size={13}
                           strokeWidth={1.75}
                           className="text-muted-foreground"

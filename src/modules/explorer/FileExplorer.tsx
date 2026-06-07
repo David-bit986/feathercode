@@ -1,3 +1,4 @@
+import { FilePlus, Folder, FolderPlus, FolderSymlink, RefreshCcw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -6,14 +7,8 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  FileAddIcon,
-  Folder01Icon,
-  FolderAddIcon,
-  Refresh01Icon,
-  Search01Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   forwardRef,
@@ -48,6 +43,7 @@ type Props = {
   onRevealInTerminal?: (path: string) => void;
   onAttachToAgent?: (path: string) => void;
   onOpenMarkdownPreview?: (path: string) => void;
+  onOpenFolder?: () => void;
 };
 
 type Row =
@@ -156,6 +152,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(
       onRevealInTerminal,
       onAttachToAgent,
       onOpenMarkdownPreview,
+      onOpenFolder,
     },
     ref,
   ) {
@@ -251,8 +248,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(
     if (!rootPath) {
       return (
         <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-          <HugeiconsIcon
-            icon={Folder01Icon}
+          <Folder
             size={24}
             strokeWidth={1.5}
             className="text-muted-foreground"
@@ -406,11 +402,21 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(
             variant="ghost"
             size="icon"
             className="size-6 text-muted-foreground hover:text-foreground"
+            onClick={onOpenFolder}
+            title="Open Folder"
+          >
+            <FolderSymlink size={13} strokeWidth={2} />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-6 text-muted-foreground hover:text-foreground"
             onClick={() => setIsSearchOpen((v) => !v)}
             title="Search files"
             aria-label="Search files"
           >
-            <HugeiconsIcon icon={Search01Icon} size={13} strokeWidth={2} />
+            <Search size={13} strokeWidth={2} />
           </Button>
 
           <Button
@@ -420,7 +426,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(
             onClick={() => tree.beginCreate(rootPath, "file")}
             title="New file"
           >
-            <HugeiconsIcon icon={FileAddIcon} size={13} strokeWidth={2} />
+            <FilePlus size={13} strokeWidth={2} />
           </Button>
           <Button
             variant="ghost"
@@ -429,7 +435,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(
             onClick={() => tree.beginCreate(rootPath, "dir")}
             title="New folder"
           >
-            <HugeiconsIcon icon={FolderAddIcon} size={13} strokeWidth={2} />
+            <FolderPlus size={13} strokeWidth={2} />
           </Button>
           <Button
             variant="ghost"
@@ -438,7 +444,7 @@ export const FileExplorer = forwardRef<FileExplorerHandle, Props>(
             onClick={() => tree.refresh(rootPath)}
             title="Refresh"
           >
-            <HugeiconsIcon icon={Refresh01Icon} size={12} strokeWidth={2} />
+            <RefreshCcw size={12} strokeWidth={2} />
           </Button>
         </div>
 

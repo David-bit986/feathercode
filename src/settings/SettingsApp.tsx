@@ -1,17 +1,11 @@
+import { Info, Keyboard, Palette, ScanSearch, Settings, Users } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WindowControls } from "@/components/WindowControls";
 import { IS_MAC, USE_CUSTOM_WINDOW_CONTROLS } from "@/lib/platform";
 import type { SettingsTab } from "@/modules/settings/openSettingsWindow";
 import { usePreferencesStore } from "@/modules/settings/preferences";
-import {
-  AiScanIcon,
-  InformationCircleIcon,
-  PaintBoardIcon,
-  Settings01Icon,
-  UserMultiple02Icon,
-  KeyboardIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { type JSX, useEffect, useState } from "react";
 import { AboutSection } from "./sections/AboutSection";
@@ -21,14 +15,14 @@ import { ModelsSection } from "./sections/ModelsSection";
 import { ShortcutsSection } from "./sections/ShortcutsSection";
 import { ThemesSection } from "./sections/ThemesSection";
 
-const TABS: { id: SettingsTab; label: string; icon: typeof Settings01Icon, component: () => JSX.Element }[] =
+const TABS: { id: SettingsTab; label: string; icon: typeof Settings, component: () => JSX.Element }[] =
   [
-    { id: "general", label: "General", icon: Settings01Icon, component: GeneralSection },
-    { id: "themes", label: "Themes", icon: PaintBoardIcon, component: ThemesSection },
-    { id: "shortcuts", label: "Shortcuts", icon: KeyboardIcon, component: ShortcutsSection },
-    { id: "models", label: "Models", icon: AiScanIcon, component: ModelsSection },
-    { id: "agents", label: "Agents", icon: UserMultiple02Icon, component: AgentsSection },
-    { id: "about", label: "About", icon: InformationCircleIcon, component: AboutSection },
+    { id: "general", label: "General", icon: Settings, component: GeneralSection },
+    { id: "themes", label: "Themes", icon: Palette, component: ThemesSection },
+    { id: "shortcuts", label: "Shortcuts", icon: Keyboard, component: ShortcutsSection },
+    { id: "models", label: "Models", icon: ScanSearch, component: ModelsSection },
+    { id: "agents", label: "Agents", icon: Users, component: AgentsSection },
+    { id: "about", label: "About", icon: Info, component: AboutSection },
   ];
 
 const VALID_TABS: SettingsTab[] = [
@@ -70,7 +64,7 @@ export function SettingsApp() {
       }
     };
     const unlistenPromise = getCurrentWebviewWindow().listen<string>(
-      "terax:settings-tab",
+      "fc:settings-tab",
       (e) => apply(e.payload),
     );
     return () => {
@@ -99,7 +93,7 @@ export function SettingsApp() {
                 value={t.id}
                 className="h-6 gap-1.5 px-2.5 text-[11.5px]"
               >
-                <HugeiconsIcon icon={t.icon} size={12} strokeWidth={1.75} />
+                <t.icon size={12} strokeWidth={1.75} />
                 <span>{t.label}</span>
               </TabsTrigger>
             ))}

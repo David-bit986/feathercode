@@ -1,29 +1,12 @@
+import { MessageSquare, PanelBottom, PanelLeft, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { WindowControls } from "@/components/WindowControls";
-import { IS_MAC, KEY_SEP, USE_CUSTOM_WINDOW_CONTROLS } from "@/lib/platform";
-import { usePreferencesStore } from "@/modules/settings/preferences";
-import {
-  getBindingTokens,
-  SHORTCUTS,
-  type ShortcutId,
-} from "@/modules/shortcuts/shortcuts";
+import { IS_MAC, USE_CUSTOM_WINDOW_CONTROLS } from "@/lib/platform";
 import type { Tab } from "@/modules/tabs";
 import { TabBar } from "@/modules/tabs";
 import { NotificationBell } from "@/modules/agents";
-import {
-  GridViewIcon,
-  LayoutTwoColumnIcon,
-  LayoutTwoRowIcon,
-  Settings01Icon,
-  SidebarLeftIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   SearchInline,
@@ -35,25 +18,23 @@ type Props = {
   tabs: Tab[];
   activeId: number;
   onSelect: (id: number) => void;
-  onNew: () => void;
-  onNewPrivate: () => void;
-  onNewPreview: () => void;
   onNewEditor: () => void;
+  onNewPreview: () => void;
   onNewGitGraph: () => void;
   onClose: (id: number) => void;
-  /** Promote a preview (transient) tab to persistent. */
   onPin: (id: number) => void;
-  /** Set a terminal tab's custom label; empty string resets to default. */
   onRename: (id: number, title: string) => void;
-  onToggleSidebar: () => void;
-  onSplit: (dir: "row" | "col") => void;
-  /** Active tab is a terminal and below the per-tab pane cap. */
-  canSplit: boolean;
   onActivateAgent: (tabId: number, leafId: number) => void;
   onActivateLocalAgent: () => void;
   onOpenSettings: () => void;
   searchTarget: SearchTarget;
   searchRef: RefObject<SearchInlineHandle | null>;
+  leftOpen: boolean;
+  rightOpen: boolean;
+  bottomOpen: boolean;
+  onToggleLeft: () => void;
+  onToggleRight: () => void;
+  onToggleBottom: () => void;
 };
 
 const COMPACT_WIDTH = 720;
@@ -62,37 +43,26 @@ export function Header({
   tabs,
   activeId,
   onSelect,
-  onNew,
-  onNewPrivate,
-  onNewPreview,
   onNewEditor,
+  onNewPreview,
   onNewGitGraph,
   onClose,
   onPin,
   onRename,
-  onToggleSidebar,
-  onSplit,
-  canSplit,
   onActivateAgent,
   onActivateLocalAgent,
   onOpenSettings,
   searchTarget,
   searchRef,
+  leftOpen,
+  rightOpen,
+  bottomOpen,
+  onToggleLeft,
+  onToggleRight,
+  onToggleBottom,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [compact, setCompact] = useState(false);
-  const userShortcuts = usePreferencesStore((s) => s.shortcuts);
-
-  const tokensFor = (id: ShortcutId): string => {
-    const s = SHORTCUTS.find((s) => s.id === id);
-    if (!s) return "";
-    const bindings = userShortcuts[id] || s.defaultBindings;
-    if (!bindings || bindings.length === 0) return "";
-    return getBindingTokens(bindings[0]).join(KEY_SEP);
-  };
-
-  const splitRightTokens = tokensFor("pane.splitRight");
-  const splitDownTokens = tokensFor("pane.splitDown");
 
   useEffect(() => {
     const el = rootRef.current;
@@ -113,7 +83,7 @@ export function Header({
       onClick={onOpenSettings}
       title="Settings"
     >
-      <HugeiconsIcon icon={Settings01Icon} size={15} strokeWidth={1.75} />
+      <Settings size={15} strokeWidth={1.75} />
     </Button>
   );
 
@@ -121,85 +91,42 @@ export function Header({
     <div
       ref={rootRef}
       data-tauri-drag-region
-      className={`flex h-10 shrink-0 items-center gap-2 border-b border-border/60 bg-card select-none ${
+      className={`flex h-10 shrink-0 items-center gap-2 border-b border-border/30 bg-card/70 backdrop-blur-xl select-none ${
         IS_MAC ? "pr-2 pl-20" : "pr-0 pl-2"
       }`}
     >
       <div className="flex shrink-0 items-center gap-0.5">
         <Button
-          onClick={onToggleSidebar}
-          title="Toggle sidebar"
+          onClick={onToggleLeft}
+          title={leftOpen ? "Hide sidebar" : "Show sidebar"}
           variant="ghost"
           size="icon-sm"
-          className="shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+          className={`shrink-0 rounded-md hover:bg-accent hover:text-foreground ${
+            leftOpen ? "text-foreground" : "text-muted-foreground"
+          }`}
         >
-          <HugeiconsIcon icon={SidebarLeftIcon} size={18} strokeWidth={1.75} />
+          <PanelLeft size={18} strokeWidth={1.75} />
         </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50"
-              title="Split terminal"
-              disabled={!canSplit}
-            >
-              <HugeiconsIcon icon={GridViewIcon} size={16} strokeWidth={1.75} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="min-w-44">
-            <DropdownMenuItem onSelect={() => onSplit("row")}>
-              <HugeiconsIcon
-                icon={LayoutTwoColumnIcon}
-                size={14}
-                strokeWidth={1.75}
-              />
-              <span className="flex-1">Split right</span>
-              {splitRightTokens && (
-                <span className="text-xs text-muted-foreground">
-                  {splitRightTokens}
-                </span>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onSplit("col")}>
-              <HugeiconsIcon
-                icon={LayoutTwoRowIcon}
-                size={14}
-                strokeWidth={1.75}
-              />
-              <span className="flex-1">Split down</span>
-              {splitDownTokens && (
-                <span className="text-xs text-muted-foreground">
-                  {splitDownTokens}
-                </span>
-              )}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {!IS_MAC && <NotificationBell
+        {!IS_MAC && (
+          <NotificationBell
             onActivate={onActivateAgent}
             onActivateLocal={onActivateLocalAgent}
-          />}
+          />
+        )}
       </div>
 
       {!IS_MAC && <span className="mx-1 h-5 w-px shrink-0 bg-border" />}
 
       {IS_MAC && <span className="mr-1 h-full w-px shrink-0 bg-border" />}
 
-      <div
-        className="flex min-w-0 flex-1 items-center gap-2"
-        data-tauri-drag-region
-      >
+      <div className="flex min-w-0 flex-1 items-center gap-2" data-tauri-drag-region>
         <TabBar
           tabs={tabs}
           activeId={activeId}
           onSelect={onSelect}
-          onNew={onNew}
-          onNewPrivate={onNewPrivate}
-          onNewPreview={onNewPreview}
           onNewEditor={onNewEditor}
+          onNewPreview={onNewPreview}
           onNewGitGraph={onNewGitGraph}
           onClose={onClose}
           onPin={onPin}
@@ -210,6 +137,32 @@ export function Header({
       </div>
 
       <SearchInline ref={searchRef} target={searchTarget} compact={compact} />
+
+      <div className="flex shrink-0 items-center gap-0.5">
+        <Button
+          onClick={onToggleBottom}
+          title={bottomOpen ? "Hide terminal" : "Show terminal"}
+          variant="ghost"
+          size="icon-sm"
+          className={`shrink-0 rounded-md hover:bg-accent hover:text-foreground ${
+            bottomOpen ? "text-foreground" : "text-muted-foreground"
+          }`}
+        >
+          <PanelBottom size={16} strokeWidth={1.75} />
+        </Button>
+
+        <Button
+          onClick={onToggleRight}
+          title={rightOpen ? "Hide AI panel" : "Show AI panel"}
+          variant="ghost"
+          size="icon-sm"
+          className={`shrink-0 rounded-md hover:bg-accent hover:text-foreground ${
+            rightOpen ? "text-foreground" : "text-muted-foreground"
+          }`}
+        >
+          <MessageSquare size={16} strokeWidth={1.75} />
+        </Button>
+      </div>
 
       {IS_MAC && (
         <>

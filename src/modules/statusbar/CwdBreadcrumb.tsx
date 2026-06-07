@@ -1,3 +1,4 @@
+import {  ChevronDown, Folder, Home, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -13,13 +14,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ArrowDown01Icon,
-  Folder01Icon,
-  Home03Icon,
-  MoreHorizontalIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
 import { currentWorkspaceEnv } from "@/modules/workspace";
@@ -154,8 +150,7 @@ function BreadcrumbSegment({
               className="gap-1 text-muted-foreground hover:text-foreground"
             >
               {isHome ? (
-                <HugeiconsIcon
-                  icon={Home03Icon}
+                <Home
                   className="size-3"
                   strokeWidth={1.75}
                 />
@@ -209,8 +204,7 @@ function CurrentSegmentDropdown({
         <BreadcrumbPage className="flex cursor-pointer items-center gap-1 rounded-sm px-1 py-0.5 text-foreground hover:bg-accent">
           {label === "~" ? (
             <>
-              <HugeiconsIcon
-                icon={Home03Icon}
+              <Home
                 className="size-3"
                 strokeWidth={1.75}
               />
@@ -219,8 +213,7 @@ function CurrentSegmentDropdown({
           ) : (
             label
           )}
-          <HugeiconsIcon
-            icon={ArrowDown01Icon}
+          <ChevronDown
             className="size-3 opacity-70"
             strokeWidth={2}
           />
@@ -243,8 +236,7 @@ function CurrentSegmentDropdown({
                 onCd(path.endsWith("/") ? `${path}${name}` : `${path}/${name}`)
               }
             >
-              <HugeiconsIcon
-                icon={Folder01Icon}
+              <Folder
                 className="size-3.5 text-muted-foreground"
                 strokeWidth={1.75}
               />
@@ -274,8 +266,7 @@ function CollapsedSegments({
               title="Show hidden folders"
               className="flex items-center rounded-sm px-1 text-muted-foreground hover:bg-accent hover:text-foreground"
             >
-              <HugeiconsIcon
-                icon={MoreHorizontalIcon}
+              <MoreHorizontal
                 className="size-3"
                 strokeWidth={1.75}
               />
@@ -287,11 +278,11 @@ function CollapsedSegments({
                 key={s.fullPath}
                 onSelect={() => onCd(s.fullPath)}
               >
-                <HugeiconsIcon
-                  icon={s.isHome ? Home03Icon : Folder01Icon}
-                  className="size-3.5 text-muted-foreground"
-                  strokeWidth={1.75}
-                />
+                {s.isHome ? (
+                  <Home className="size-3.5 text-muted-foreground" strokeWidth={1.75} />
+                ) : (
+                  <Folder className="size-3.5 text-muted-foreground" strokeWidth={1.75} />
+                )}
                 <span className="truncate">{s.isHome ? "Home" : s.label}</span>
               </DropdownMenuItem>
             ))}

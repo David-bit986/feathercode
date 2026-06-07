@@ -1,11 +1,12 @@
+import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { KEY_SEP } from "@/lib/platform";
 import type { EditorPaneHandle } from "@/modules/editor";
 import { usePreferencesStore } from "@/modules/settings/preferences";
 import { getBindingTokens, SHORTCUTS } from "@/modules/shortcuts/shortcuts";
-import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import type { SearchAddon } from "@xterm/addon-search";
 import {
   forwardRef,
@@ -139,8 +140,7 @@ export const SearchInline = forwardRef<SearchInlineHandle, Props>(
       >
         {expanded ? (
           <div className="absolute inset-0 animate-in fade-in-0 duration-150">
-            <HugeiconsIcon
-              icon={Search01Icon}
+            <Search
               size={13}
               strokeWidth={1.75}
               className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2 text-muted-foreground"
@@ -184,7 +184,7 @@ export const SearchInline = forwardRef<SearchInlineHandle, Props>(
                 className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
                 aria-label="Clear search"
               >
-                <HugeiconsIcon icon={Cancel01Icon} size={11} strokeWidth={2} />
+                <X size={11} strokeWidth={2} />
               </button>
             )}
           </div>
@@ -197,7 +197,7 @@ export const SearchInline = forwardRef<SearchInlineHandle, Props>(
               onClick={focus}
               title={tooltipTitle}
             >
-              <HugeiconsIcon icon={Search01Icon} size={15} strokeWidth={1.75} />
+              <Search size={15} strokeWidth={1.75} />
             </Button>
           </div>
         )}

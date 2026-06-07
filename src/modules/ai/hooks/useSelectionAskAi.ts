@@ -23,8 +23,7 @@ export function useSelectionAskAi({
       if (!el) return false;
       return !!(
         el.closest("[data-selection-ask-ai]") ||
-        el.closest("[data-ai-input-bar]") ||
-        el.closest("[data-ai-mini-window]")
+        el.closest("[data-ai-input-bar]")
       );
     };
 

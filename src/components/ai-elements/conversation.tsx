@@ -1,10 +1,11 @@
+import { ChevronDown, Download } from "lucide-react";
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
-import { ArrowDown01Icon, Download01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import type { ComponentProps } from "react";
 import { useCallback } from "react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
@@ -13,7 +14,7 @@ export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
 export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
-    className={cn("relative flex-1 overflow-y-hidden", className)}
+    className={cn("relative flex-1 min-h-0 overflow-y-hidden", className)}
     initial="smooth"
     resize="smooth"
     role="log"
@@ -45,8 +46,8 @@ export const ConversationEmptyState = ({
   className,
   title = "No messages yet",
   description = "Start a conversation to see messages here",
-  icon,
   children,
+  icon,
   ...props
 }: ConversationEmptyStateProps) => (
   <div
@@ -95,7 +96,7 @@ export const ConversationScrollButton = ({
         variant="outline"
         {...props}
       >
-        <HugeiconsIcon icon={ArrowDown01Icon} size={13} strokeWidth={2} />
+        <ChevronDown size={13} strokeWidth={2} />
       </Button>
     )
   );
@@ -163,7 +164,7 @@ export const ConversationDownload = ({
       variant="outline"
       {...props}
     >
-      {children ?? <HugeiconsIcon icon={Download01Icon} size={16} />}
+      {children ?? <Download size={16} />}
     </Button>
   );
 };

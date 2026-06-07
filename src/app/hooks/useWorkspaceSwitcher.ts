@@ -106,5 +106,28 @@ export function useWorkspaceSwitcher({
     ],
   );
 
-  return { home, launchCwd, launchCwdResolved, switchWorkspace };
+  const openFolderWorkspace = useCallback(
+    async (folder: string) => {
+      const dirty = tabsRef.current.some((t) => t.kind === "editor" && t.dirty);
+      if (dirty) {
+        window.alert(
+          "Save or close unsaved editor tabs before switching folder.",
+        );
+        return;
+      }
+      clearWorkspaceState();
+      setWorkspaceEnv(LOCAL_WORKSPACE);
+      const normalized = folder.replace(/\\/g, "/");
+      setLaunchCwd(normalized);
+      try {
+        await native.workspaceAuthorize(normalized);
+      } catch {
+        // Non-fatal
+      }
+      resetWorkspace(normalized);
+    },
+    [tabsRef, clearWorkspaceState, setWorkspaceEnv, resetWorkspace]
+  );
+
+  return { home, launchCwd, launchCwdResolved, switchWorkspace, openFolderWorkspace };
 }

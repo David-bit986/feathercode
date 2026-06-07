@@ -1,0 +1,24 @@
+const fs = require('fs');
+
+const f = 'src/components/ai-elements/tool.tsx';
+let c = fs.readFileSync(f, 'utf8');
+c = c.replace(/<AlertTriangle\s+size=\{13\}\s+strokeWidth=\{1\.75\}\s+className="shrink-0 text-muted-foreground"\s*\/>/g, '<Icon size={13} strokeWidth={1.75} className="shrink-0 text-muted-foreground" />');
+c = c.replace(/const Icon = icon;\s*/, '');
+c = c.replace(/label: "Read": File/, 'label: "Read", icon: File');
+c = c.replace(/label: "List": FolderOpen/, 'label: "List", icon: FolderOpen');
+c = c.replace(/label: "Write": FilePlus/, 'label: "Write", icon: FilePlus');
+c = c.replace(/label: "Create dir": FolderPlus/, 'label: "Create dir", icon: FolderPlus');
+c = c.replace(/label: "Edit": FilePenLine/, 'label: "Edit", icon: FilePenLine');
+c = c.replace(/label: "Edit": FileEdit/, 'label: "Edit", icon: FileEdit');
+c = c.replace(/label: "Run": Terminal/, 'label: "Run", icon: Terminal');
+c = c.replace(/label: "Spawn": Terminal/, 'label: "Spawn", icon: Terminal');
+c = c.replace(/label: "Logs": Terminal/, 'label: "Logs", icon: Terminal');
+c = c.replace(/label: "Jobs": Terminal/, 'label: "Jobs", icon: Terminal');
+c = c.replace(/label: "Kill": Terminal/, 'label: "Kill", icon: Terminal');
+c = c.replace(/label: "Search": Globe/, 'label: "Search", icon: Globe');
+c = c.replace(/label: "Glob": Folder/, 'label: "Glob", icon: Folder');
+c = c.replace(/label: "Suggest": Sparkles/, 'label: "Suggest", icon: Sparkles');
+c = c.replace(/label: "Preview": Eye/, 'label: "Preview", icon: Eye');
+c = c.replace(/label: "Subagent": Bot/, 'label: "Subagent", icon: Bot');
+c = c.replace(/label: "Todos": ListChecks/, 'label: "Todos", icon: ListChecks');
+fs.writeFileSync(f, c, 'utf8');

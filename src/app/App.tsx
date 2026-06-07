@@ -6,15 +6,14 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getLaunchDir } from "@/lib/launchDir";
+import { open } from "@tauri-apps/plugin-dialog";
 import { usePresence } from "@/lib/usePresence";
 import { quoteShellArg } from "@/lib/shellQuote";
 import { useZoom } from "@/lib/useZoom";
 import { AgentNotificationsBridge } from "@/modules/agents";
+import { useManagedAgentsStore } from "@/modules/agents/store/managedAgentsStore";
 import {
   AgentRunBridge,
-  AiInputBar,
-  AiInputBarConnect,
-  AiMiniWindow,
   LocalAgentNotificationsBridge,
   SelectionAskAi,
   useAiBootstrap,
@@ -23,6 +22,7 @@ import {
   useSelectionAskAi,
 } from "@/modules/ai";
 import { AiComposerProvider } from "@/modules/ai/lib/composer";
+import { AiSidePanel } from "@/modules/ai/components/AiSidePanel";
 import { native } from "@/modules/ai/lib/native";
 import {
   CommandPalette,
@@ -58,9 +58,7 @@ import {
   SourceControlPanel,
   useSourceControlContext,
 } from "@/modules/source-control";
-import { StatusBar } from "@/modules/statusbar";
 import {
-  MAX_PANES_PER_TAB,
   useTabs,
   useWindowTitle,
   useWorkspaceCwd,
@@ -82,6 +80,7 @@ import type { SearchAddon } from "@xterm/addon-search";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CloseDialogs } from "./components/CloseDialogs";
 import { WorkspaceSurface } from "./components/WorkspaceSurface";
+import { BottomTerminal } from "./components/BottomTerminal";
 import { useTabCloseGuards } from "./hooks/useTabCloseGuards";
 import { useWorkspaceSwitcher } from "./hooks/useWorkspaceSwitcher";
 
@@ -114,10 +113,13 @@ export default function App() {
     resetWorkspace,
   } = useTabs(getLaunchDir() ? { cwd: getLaunchDir() } : undefined);
 
-  // Mirror `tabs` into a ref so callbacks scheduled with `setTimeout`
-  // (e.g. cdInNewTab) read the latest pane state instead of a stale closure.
   const tabsRef = useRef(tabs);
   tabsRef.current = tabs;
+
+  // Panel toggle state
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(false);
+  const [bottomOpen, setBottomOpen] = useState(false);
 
   const activeTerminalTab = useMemo(() => {
     const t = tabs.find((x) => x.id === activeId);
@@ -140,8 +142,6 @@ export default function App() {
   useTerminalFileDrop();
   const explorerRef = useRef<FileExplorerHandle>(null);
 
-  // Drives session disposal off the pane tree, not React lifecycles —
-  // split/unsplit re-mount components but the leaf is still live.
   const liveLeavesRef = useRef<Set<number>>(new Set());
 
   const clearWorkspaceState = useCallback(() => {
@@ -156,7 +156,7 @@ export default function App() {
 
   const workspaceEnv = useWorkspaceEnvStore((s) => s.env);
   const setWorkspaceEnv = useWorkspaceEnvStore((s) => s.setEnv);
-  const { home, launchCwd, launchCwdResolved, switchWorkspace } =
+  const { home, launchCwd, launchCwdResolved, openFolderWorkspace } =
     useWorkspaceSwitcher({
       tabsRef,
       workspaceEnv,
@@ -165,12 +165,25 @@ export default function App() {
       clearWorkspaceState,
     });
 
+  const handleOpenFolder = useCallback(async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+      });
+      if (selected && typeof selected === "string") {
+        void openFolderWorkspace(selected);
+      }
+    } catch (e) {
+      window.alert(`Failed to open dialog: ${String(e)}`);
+    }
+  }, [openFolderWorkspace]);
+
   const {
     sidebarRef,
     sidebarWidthRef,
     sidebarView,
     persistSidebarView,
-    toggleSidebar,
     cycleSidebarView,
     persistSidebarWidth,
     toggleExplorerFocus,
@@ -179,16 +192,10 @@ export default function App() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [newEditorOpen, setNewEditorOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const miniOpen = useChatStore((s) => s.mini.open);
-  const miniPresence = usePresence(miniOpen, 200);
-  const openMini = useChatStore((s) => s.openMini);
   const focusInput = useChatStore((s) => s.focusInput);
   const openPanel = useChatStore((s) => s.openPanel);
-  const panelOpen = useChatStore((s) => s.panelOpen);
   const setLive = useChatStore((s) => s.setLive);
   const respondToApproval = useChatStore((s) => s.respondToApproval);
-
-  const { hasComposer, keysLoaded } = useAiBootstrap();
 
   const activeTab = tabs.find((t) => t.id === activeId);
   const isTerminalTab = activeTab?.kind === "terminal";
@@ -205,6 +212,8 @@ export default function App() {
   );
 
   useWindowTitle(activeTab, explorerRoot);
+
+  const { hasComposer } = useAiBootstrap(explorerRoot);
 
   useEffect(() => {
     setActiveSearchAddon(
@@ -225,9 +234,6 @@ export default function App() {
 
   const disposeTab = useCallback(
     (id: number) => {
-      // Terminal-leaf-keyed maps (terminalRefs/searchAddons) are pruned by
-      // the effect below as the pane tree changes; only the tab-id-keyed
-      // handles need explicit cleanup here.
       editorRefs.current.delete(id);
       previewRefs.current.delete(id);
       closeTab(id);
@@ -294,13 +300,12 @@ export default function App() {
       void openSettingsWindow("models");
       return;
     }
-    if (panelOpen) {
-      useChatStore.getState().closePanel();
-    } else {
+    setRightOpen((v) => !v);
+    if (!rightOpen) {
       openPanel();
       focusInput(null);
     }
-  }, [hasComposer, panelOpen, openPanel, focusInput]);
+  }, [hasComposer, rightOpen, openPanel, focusInput]);
 
   const attachSelection = useChatStore((s) => s.attachSelection);
 
@@ -310,15 +315,14 @@ export default function App() {
         void openSettingsWindow("models");
         return;
       }
-      // Dispatch a window event the composer listens for. Same pattern as
-      // selections — keeps file-explorer decoupled from the AI module.
       window.dispatchEvent(
-        new CustomEvent<string>("terax:ai-attach-file", { detail: path }),
+        new CustomEvent<string>("fc:ai-attach-file", { detail: path }),
       );
+      if (!rightOpen) setRightOpen(true);
       openPanel();
       focusInput(null);
     },
-    [hasComposer, openPanel, focusInput],
+    [hasComposer, rightOpen, openPanel, focusInput],
   );
 
   const askFromSelection = useCallback(() => {
@@ -334,13 +338,8 @@ export default function App() {
     const source: "terminal" | "editor" =
       activeTab?.kind === "editor" ? "editor" : "terminal";
     attachSelection(selection, source);
-  }, [
-    hasComposer,
-    captureActiveSelection,
-    focusInput,
-    attachSelection,
-    activeTab,
-  ]);
+    if (!rightOpen) setRightOpen(true);
+  }, [hasComposer, captureActiveSelection, focusInput, attachSelection, activeTab, rightOpen]);
 
   const { askPopup, setAskPopup, onAskFromSelection } = useSelectionAskAi({
     captureActiveSelection,
@@ -355,17 +354,6 @@ export default function App() {
   const openNewPrivateTab = useCallback(() => {
     newPrivateTab(inheritedCwdForNewTab());
   }, [newPrivateTab, inheritedCwdForNewTab]);
-
-  const sendCd = useCallback(
-    (path: string) => {
-      if (activeLeafId === null) return;
-      const term = terminalRefs.current.get(activeLeafId);
-      if (!term) return;
-      term.write(`cd ${quoteShellArg(path)}\r`);
-      term.focus();
-    },
-    [activeLeafId],
-  );
 
   const cdInNewTab = useCallback(
     (path: string) => {
@@ -384,8 +372,6 @@ export default function App() {
 
   const handleOpenFile = useCallback(
     (path: string, pin?: boolean) => {
-      // Explorer defaults to preview (pin=false); explicit actions like
-      // context-menu "Open" pass pin=true for a persistent tab.
       openFileTab(path, pin ?? false);
     },
     [openFileTab],
@@ -419,21 +405,6 @@ export default function App() {
         null)
       : null;
 
-  const activeFilePath = (() => {
-    if (activeTab?.kind === "editor") return activeTab.path;
-    if (activeTab?.kind === "git-diff") {
-      if (/^([A-Za-z]:|\/|\\)/.test(activeTab.path)) return activeTab.path;
-      const root = activeTab.repoRoot.replace(/[\\/]+$/, "");
-      const rel = activeTab.path.replace(/^[\\/]+/, "");
-      return `${root}/${rel}`;
-    }
-    if (activeTab?.kind === "git-commit-file") {
-      const root = activeTab.repoRoot.replace(/[\\/]+$/, "");
-      const rel = activeTab.path.replace(/^[\\/]+/, "");
-      return `${root}/${rel}`;
-    }
-    return null;
-  })();
   const explorerActiveFilePath =
     activeTab?.kind === "editor" || activeTab?.kind === "markdown"
       ? activeTab.path
@@ -455,7 +426,6 @@ export default function App() {
   const openPreviewTab = useCallback(
     (url: string) => {
       const id = newPreviewTab(url);
-      // Focus the address bar if the URL is empty so the user can type.
       if (!url) {
         setTimeout(() => previewRefs.current.get(id)?.focusAddressBar(), 0);
       }
@@ -514,8 +484,9 @@ export default function App() {
       "ai.toggle": togglePanelAndFocus,
       "ai.askSelection": askFromSelection,
       "shortcuts.open": () => setShortcutsOpen((v) => !v),
+      "workspace.openFolder": handleOpenFolder,
       "settings.open": () => void openSettingsWindow(),
-      "sidebar.toggle": toggleSidebar,
+      "sidebar.toggle": () => setLeftOpen((v) => !v),
       "explorer.focus": toggleExplorerFocus,
       "view.zoomIn": zoomIn,
       "view.zoomOut": zoomOut,
@@ -537,7 +508,6 @@ export default function App() {
       toggleSourceControl,
       togglePanelAndFocus,
       askFromSelection,
-      toggleSidebar,
       toggleExplorerFocus,
       zoomIn,
       zoomOut,
@@ -561,23 +531,16 @@ export default function App() {
         return !sel || !sel.trim();
       }
       if (id === "terminal.clear") {
-        // Only intercept ⌘K while a terminal is focused; elsewhere let the key
-        // fall through (we never preventDefault when disabled).
         const target =
           (e.target as HTMLElement | null) ?? document.activeElement;
         return !(target as HTMLElement | null)?.closest?.(".xterm");
       }
       if (id === "sidebar.toggle") {
-        // Ctrl+B is also Claude Code's "run in background" key. While a terminal
-        // is focused, let Ctrl+B reach the shell/Claude instead of toggling the
-        // sidebar. Ctrl+Shift+B (second binding) still toggles it from anywhere.
         const target =
           (e.target as HTMLElement | null) ?? document.activeElement;
         const inTerminal = !!(target as HTMLElement | null)?.closest?.(
           ".xterm",
         );
-        // Only defer the plain (no-shift) Ctrl/⌘+B binding; the Shift variant
-        // is the always-on toggle and is never claimed by the terminal.
         return inTerminal && !e.shiftKey;
       }
       return false;
@@ -640,14 +603,21 @@ export default function App() {
     (tabId: number, leafId: number) => {
       setActiveId(tabId);
       focusPane(tabId, leafId);
+      // Switch AI chat to the managed agent's session
+      const ma = useManagedAgentsStore.getState().get(leafId);
+      if (ma) {
+        useChatStore.getState().switchSession(ma.sessionId);
+        if (!rightOpen) setRightOpen(true);
+      }
     },
-    [setActiveId, focusPane],
+    [setActiveId, focusPane, rightOpen],
   );
 
   const onActivateLocalAgent = useCallback(() => {
+    if (!rightOpen) setRightOpen(true);
     openPanel();
     focusInput(null);
-  }, [openPanel, focusInput]);
+  }, [rightOpen, openPanel, focusInput]);
 
   const handleLeafExit = useCallback(
     (leafId: number, _code: number) => {
@@ -730,7 +700,7 @@ export default function App() {
             focusPreviousPane: () => focusNextPaneInTab(activeId, -1),
             focusSearch: () => searchInlineRef.current?.focus(),
             focusExplorerSearch: () => explorerRef.current?.focusSearch(),
-            toggleSidebar,
+            toggleSidebar: () => setLeftOpen((v) => !v),
             toggleAi: togglePanelAndFocus,
             askAiSelection: askFromSelection,
             openSettings: () => void openSettingsWindow(),
@@ -751,13 +721,11 @@ export default function App() {
       cycleTab,
       splitActivePaneInActiveTab,
       focusNextPaneInTab,
-      toggleSidebar,
       togglePanelAndFocus,
       askFromSelection,
+      handleOpenFolder,
     ],
   );
-
-  const activeCwd = activeTerminalLeafCwd;
 
   useAiLiveBridge({
     setLive,
@@ -771,34 +739,34 @@ export default function App() {
     terminalRefs,
   });
 
+  const editorTabs = useMemo(() => tabs.filter((t) => t.kind !== "terminal"), [tabs]);
+
   const shell = (
     <ThemeProvider>
       <TooltipProvider>
         <div className="relative flex h-screen flex-col overflow-hidden bg-background text-foreground">
           {!zenMode && (
             <Header
-              tabs={tabs}
+              tabs={editorTabs}
               activeId={activeId}
               onSelect={setActiveId}
-              onNew={openNewTab}
-              onNewPrivate={openNewPrivateTab}
-              onNewPreview={() => openPreviewTab("")}
               onNewEditor={() => setNewEditorOpen(true)}
+              onNewPreview={() => openPreviewTab("")}
               onNewGitGraph={openGitGraphFromContext}
               onClose={handleClose}
               onPin={pinTab}
               onRename={handleRenameTab}
-              onToggleSidebar={toggleSidebar}
-              onSplit={splitActivePaneInActiveTab}
-              canSplit={
-                activeTerminalTab !== null &&
-                leafIds(activeTerminalTab.paneTree).length < MAX_PANES_PER_TAB
-              }
               onActivateAgent={onActivateAgent}
               onActivateLocalAgent={onActivateLocalAgent}
               onOpenSettings={() => void openSettingsWindow()}
               searchTarget={searchTarget}
               searchRef={searchInlineRef}
+              leftOpen={leftOpen}
+              rightOpen={rightOpen}
+              bottomOpen={bottomOpen}
+              onToggleLeft={() => setLeftOpen((v) => !v)}
+              onToggleRight={() => setRightOpen((v) => !v)}
+              onToggleBottom={() => setBottomOpen((v) => !v)}
             />
           )}
 
@@ -807,53 +775,69 @@ export default function App() {
               orientation="horizontal"
               className="min-h-0 flex-1"
             >
-              <ResizablePanel
-                id="sidebar"
-                panelRef={sidebarRef}
-                defaultSize={`${sidebarWidthRef.current}px`}
-                minSize={`${SIDEBAR_MIN_WIDTH}px`}
-                maxSize={`${SIDEBAR_MAX_WIDTH}px`}
-                collapsible
-                collapsedSize={0}
-                onResize={(size) => {
-                  if (size.inPixels > 0) persistSidebarWidth(size.inPixels);
-                }}
+              {/* LEFT SIDEBAR */}
+              {leftOpen && (
+                <>
+                  <ResizablePanel
+                    id="sidebar"
+                    panelRef={sidebarRef}
+                    defaultSize={`${sidebarWidthRef.current}px`}
+                    minSize={`${SIDEBAR_MIN_WIDTH}px`}
+                    maxSize={`${SIDEBAR_MAX_WIDTH}px`}
+                    collapsible
+                    collapsedSize={0}
+                    onResize={(size) => {
+                      if (size.inPixels > 0) persistSidebarWidth(size.inPixels);
+                    }}
+                  >
+                    <div className="flex h-full min-h-0 flex-col border-r border-border/40 bg-card/60">
+                      <div className="min-h-0 flex-1">
+                        {sidebarView === "explorer" ? (
+                          <FileExplorer
+                            ref={explorerRef}
+                            rootPath={explorerRoot}
+                            activeFilePath={explorerActiveFilePath}
+                            onOpenFile={handleOpenFile}
+                            onPathRenamed={handlePathRenamed}
+                            onPathDeleted={handlePathDeleted}
+                            onRevealInTerminal={cdInNewTab}
+                            onAttachToAgent={handleAttachFileToAgent}
+                            onOpenMarkdownPreview={openMarkdownPreview}
+                            onOpenFolder={handleOpenFolder}
+                          />
+                        ) : (
+                          <SourceControlPanel
+                            open
+                            sourceControl={sourceControl}
+                            onOpenDiff={openGitDiffTab}
+                            onOpenGitGraph={openGitGraphFromContext}
+                            onOpenFile={handleOpenFile}
+                          />
+                        )}
+                      </div>
+                      <SidebarRail
+                        activeView={sidebarView}
+                        onSelectView={persistSidebarView}
+                        changedCount={sourceControl.changedCount}
+                      />
+                    </div>
+                  </ResizablePanel>
+                  <ResizableHandle withHandle />
+                </>
+              )}
+
+              {/* CENTER + BOTTOM TERMINAL */}
+              <ResizablePanel 
+                id="workspace" 
+                defaultSize={rightOpen ? "60%" : "100%"} 
+                minSize="25%"
               >
-                <div className="flex h-full min-h-0 flex-col border-r border-border/60 bg-card">
-                  <div className="min-h-0 flex-1">
-                    {sidebarView === "explorer" ? (
-                      <FileExplorer
-                        ref={explorerRef}
-                        rootPath={explorerRoot}
-                        activeFilePath={explorerActiveFilePath}
-                        onOpenFile={handleOpenFile}
-                        onPathRenamed={handlePathRenamed}
-                        onPathDeleted={handlePathDeleted}
-                        onRevealInTerminal={cdInNewTab}
-                        onAttachToAgent={handleAttachFileToAgent}
-                        onOpenMarkdownPreview={openMarkdownPreview}
-                      />
-                    ) : (
-                      <SourceControlPanel
-                        open
-                        sourceControl={sourceControl}
-                        onOpenDiff={openGitDiffTab}
-                        onOpenGitGraph={openGitGraphFromContext}
-                        onOpenFile={handleOpenFile}
-                      />
-                    )}
-                  </div>
-                  <SidebarRail
-                    activeView={sidebarView}
-                    onSelectView={persistSidebarView}
-                    changedCount={sourceControl.changedCount}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizableHandle withHandle />
-              <ResizablePanel id="workspace" defaultSize="78%" minSize="30%">
-                <div className="flex h-full min-h-0 flex-col">
-                  <div className="relative min-h-0 flex-1">
+                <ResizablePanelGroup orientation="vertical" className="h-full">
+                  <ResizablePanel
+                    id="editor-area"
+                    defaultSize={bottomOpen ? "70%" : "100%"}
+                    minSize="25%"
+                  >
                     <WorkspaceSurface
                       tabs={tabs}
                       activeId={activeId}
@@ -873,45 +857,51 @@ export default function App() {
                       onOpenCommitFile={openCommitFileDiffTab}
                       onGitHistorySearchHandle={setGitHistoryHandle}
                     />
-                  </div>
+                  </ResizablePanel>
 
-                  {keysLoaded ? (
-                    <div
-                      data-ai-input-bar
-                      data-state={panelOpen ? "open" : "closed"}
-                      className="terax-reveal"
-                      aria-hidden={!panelOpen}
-                    >
-                      <div>
-                        {hasComposer ? (
-                          <AiInputBar />
-                        ) : (
-                          <AiInputBarConnect
-                            onAdd={() => void openSettingsWindow("models")}
+                  {/* BOTTOM TERMINAL */}
+                  {bottomOpen && (
+                    <>
+                      <ResizableHandle withHandle />
+                      <ResizablePanel
+                        id="bottom-terminal"
+                        defaultSize="30%"
+                        minSize="10%"
+                        collapsible
+                        collapsedSize="0%"
+                      >
+                        <div className="h-full border-t border-border/40 bg-card/60">
+                          <BottomTerminal
+                            cwd={activeTerminalLeafCwd}
+                            workspaceRoot={explorerRoot}
+                            visible={bottomOpen}
                           />
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
+                        </div>
+                      </ResizablePanel>
+                    </>
+                  )}
+                </ResizablePanelGroup>
               </ResizablePanel>
+
+              {/* RIGHT AI PANEL */}
+              {rightOpen && (
+                <>
+                  <ResizableHandle withHandle />
+                  <ResizablePanel
+                    id="ai-panel"
+                    defaultSize="40%"
+                    minSize="25%"
+                    collapsible
+                    collapsedSize="0%"
+                  >
+                    <div className="h-full border-l border-border/40">
+                      <AiSidePanel />
+                    </div>
+                  </ResizablePanel>
+                </>
+              )}
             </ResizablePanelGroup>
           </main>
-
-          {!zenMode && (
-            <StatusBar
-              cwd={activeCwd}
-              filePath={activeFilePath}
-              home={home}
-              onCd={sendCd}
-              onWorkspaceChange={switchWorkspace}
-              onOpenMini={openMini}
-              hasComposer={hasComposer}
-              privateActive={
-                activeTab?.kind === "terminal" && activeTab.private === true
-              }
-            />
-          )}
 
           <AgentNotificationsBridge
             tabs={tabs}
@@ -930,9 +920,6 @@ export default function App() {
             </>
           ) : null}
 
-          {hasComposer && miniPresence.mounted ? (
-            <AiMiniWindow state={miniPresence.state} />
-          ) : null}
           {askPresence.mounted ? (
             <SelectionAskAi
               state={askPresence.state}

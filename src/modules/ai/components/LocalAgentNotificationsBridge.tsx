@@ -5,7 +5,7 @@ import type { AgentStatus } from "@/modules/agents/lib/types";
 import { useEffect, useRef } from "react";
 import { useChatStore } from "../store/chatStore";
 
-const AGENT = "Terax";
+const AGENT = "FeatherCode";
 
 type RunStatus =
   | "idle"
@@ -27,7 +27,7 @@ function liveStatus(s: RunStatus): AgentStatus | null {
 export function LocalAgentNotificationsBridge() {
   const status = useChatStore((s) => s.agentMeta.status) as RunStatus;
   const error = useChatStore((s) => s.agentMeta.error);
-  const visible = useChatStore((s) => s.panelOpen || s.mini.open);
+  const visible = useChatStore((s) => s.panelOpen);
   const focused = useWindowFocus();
 
   const visibleRef = useRef(visible);
@@ -63,11 +63,11 @@ export function LocalAgentNotificationsBridge() {
       });
 
     if (status === "awaiting-approval") {
-      fire("attention", "Terax needs your approval", "Approve a tool to continue");
+      fire("attention", "FeatherCode needs your approval", "Approve a tool to continue");
     } else if (status === "error") {
-      fire("error", "Terax run failed", error ?? undefined);
+      fire("error", "FeatherCode run failed", error ?? undefined);
     } else if (status === "idle" && isBusy(was)) {
-      fire("finished", "Terax finished", "Your task is ready");
+      fire("finished", "FeatherCode finished", "Your task is ready");
     }
   }, [status, error]);
 

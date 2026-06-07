@@ -1,16 +1,11 @@
-import {
-  ChatGptIcon,
-  ClaudeIcon,
-  RoboticIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import { Bot, BotMessageSquare, Sparkles } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-function iconFor(agent: string): IconSvgElement {
+function iconFor(agent: string): LucideIcon {
   const a = agent.toLowerCase();
-  if (a.includes("claude")) return ClaudeIcon;
-  if (a.includes("codex") || a.includes("gpt") || a.includes("openai"))
-    return ChatGptIcon;
-  return RoboticIcon;
+  if (a.includes("claude")) return BotMessageSquare;
+  if (a.includes("gpt") || a.includes("openai")) return Bot;
+  return Sparkles;
 }
 
 export function AgentIcon({
@@ -22,7 +17,7 @@ export function AgentIcon({
   size?: number;
   className?: string;
 }) {
-  if (agent.toLowerCase().includes("terax")) {
+  if (agent.toLowerCase().includes("feathercode")) {
     return (
       <img
         src="/logo.png"
@@ -34,9 +29,9 @@ export function AgentIcon({
       />
     );
   }
+  const Icon = iconFor(agent);
   return (
-    <HugeiconsIcon
-      icon={iconFor(agent)}
+    <Icon
       size={size}
       strokeWidth={1.75}
       className={className}

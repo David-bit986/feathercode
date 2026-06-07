@@ -1,3 +1,4 @@
+import { Copy, ExternalLink, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -13,12 +14,8 @@ import {
   type GitLogEntry,
 } from "@/modules/ai/lib/native";
 import { fileIconUrl } from "@/modules/explorer/lib/iconResolver";
-import {
-  Copy01Icon,
-  File02Icon,
-  LinkSquare02Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
@@ -161,14 +158,14 @@ function compactDate(secs: number): string {
 function statusTone(code: string): string {
   switch (code.toUpperCase()) {
     case "A":
-      return "text-emerald-600 dark:text-emerald-400";
+      return "text-primary";
     case "M":
-      return "text-amber-600 dark:text-amber-300";
+      return "text-muted-foreground";
     case "D":
-      return "text-rose-600 dark:text-rose-400";
+      return "text-destructive";
     case "R":
     case "C":
-      return "text-sky-600 dark:text-sky-300";
+      return "text-primary";
     default:
       return "text-muted-foreground";
   }
@@ -769,8 +766,7 @@ const CommitRow = memo(function CommitRow({
             className="inline-flex items-center gap-1 text-muted-foreground/75"
             title={`${commit.filesChanged} ${commit.filesChanged === 1 ? "file" : "files"} changed`}
           >
-            <HugeiconsIcon
-              icon={File02Icon}
+            <FileText
               size={10.5}
               strokeWidth={1.7}
               className="opacity-70"
@@ -787,12 +783,12 @@ const CommitRow = memo(function CommitRow({
         {totalStat > 0 ? (
           <span className="inline-flex items-center gap-1">
             {commit.insertions > 0 ? (
-              <span className="font-semibold text-emerald-600/85 dark:text-emerald-400/85">
+              <span className="font-semibold text-primary/85">
                 +{commit.insertions}
               </span>
             ) : null}
             {commit.deletions > 0 ? (
-              <span className="font-semibold text-rose-600/85 dark:text-rose-400/85">
+              <span className="font-semibold text-destructive/85">
                 −{commit.deletions}
               </span>
             ) : null}
@@ -872,7 +868,7 @@ function CommitDetail({
               setCopied(true);
             }}
           >
-            <HugeiconsIcon icon={Copy01Icon} size={11} strokeWidth={1.9} />
+            <Copy size={11} strokeWidth={1.9} />
             {copied ? "Copied" : "Copy SHA"}
           </Button>
           {webUrl ? (
@@ -882,8 +878,7 @@ function CommitDetail({
               className="h-6 cursor-pointer gap-1.5 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
               onClick={() => void openUrl(webUrl).catch(console.error)}
             >
-              <HugeiconsIcon
-                icon={LinkSquare02Icon}
+              <ExternalLink
                 size={11}
                 strokeWidth={1.9}
               />
@@ -1010,12 +1005,12 @@ const FileRow = memo(function FileRow({
         ) : (
           <>
             {file.added > 0 ? (
-              <span className="text-emerald-600 dark:text-emerald-400">
+              <span className="text-primary">
                 +{file.added}
               </span>
             ) : null}
             {file.removed > 0 ? (
-              <span className="text-rose-600 dark:text-rose-400">
+              <span className="text-destructive">
                 −{file.removed}
               </span>
             ) : null}

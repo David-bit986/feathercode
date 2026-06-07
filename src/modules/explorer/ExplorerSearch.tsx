@@ -1,3 +1,4 @@
+import { Folder, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -7,12 +8,8 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  Cancel01Icon,
-  Folder01Icon,
-  Search01Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { invoke } from "@tauri-apps/api/core";
 import { currentWorkspaceEnv } from "@/modules/workspace";
 import {
@@ -170,8 +167,7 @@ export const ExplorerSearch = forwardRef<ExplorerSearchHandle, Props>(function E
     <div className="flex flex-col">
       {open ? (
         <div className="relative shrink-0 px-2 py-1.5 animate-in fade-in-0 slide-in-from-top-3 duration-200 ease-out">
-          <HugeiconsIcon
-            icon={Search01Icon}
+          <Search
             size={13}
             strokeWidth={2}
             className="absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground"
@@ -214,7 +210,7 @@ export const ExplorerSearch = forwardRef<ExplorerSearchHandle, Props>(function E
               className="absolute top-1/2 right-3.5 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
               aria-label="Clear search"
             >
-              <HugeiconsIcon icon={Cancel01Icon} size={11} strokeWidth={2} />
+              <X size={11} strokeWidth={2} />
             </button>
           ) : null}
         </div>
@@ -256,8 +252,7 @@ export const ExplorerSearch = forwardRef<ExplorerSearchHandle, Props>(function E
                         {url ? (
                           <img src={url} alt="" className="size-3.5 shrink-0" />
                         ) : (
-                          <HugeiconsIcon
-                            icon={Folder01Icon}
+                          <Folder
                             size={13}
                             strokeWidth={1.75}
                             className="shrink-0 text-muted-foreground"

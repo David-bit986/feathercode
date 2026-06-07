@@ -1,3 +1,4 @@
+import { Monitor, Moon, Sun } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -35,12 +36,8 @@ import {
   setZoomLevel,
 } from "@/modules/settings/store";
 import { useTheme } from "@/modules/theme";
-import {
-  ComputerIcon,
-  Moon02Icon,
-  Sun03Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { disable, enable, isEnabled } from "@tauri-apps/plugin-autostart";
 import { useEffect, useState } from "react";
 import { SectionHeader } from "../components/SectionHeader";
@@ -49,11 +46,11 @@ import { SettingRow } from "../components/SettingRow";
 const APPEARANCE: {
   id: ThemePref;
   label: string;
-  icon: typeof ComputerIcon;
+  icon: typeof Monitor;
 }[] = [
-  { id: "system", label: "System", icon: ComputerIcon },
-  { id: "light", label: "Light", icon: Sun03Icon },
-  { id: "dark", label: "Dark", icon: Moon02Icon },
+  { id: "system", label: "System", icon: Monitor },
+  { id: "light", label: "Light", icon: Sun },
+  { id: "dark", label: "Dark", icon: Moon },
 ];
 
 const LETTER_SPACINGS = [-4, -3, -2, -1, 0, 1, 2, 3, 4] as const;
@@ -132,7 +129,7 @@ export function GeneralSection() {
                   : "border-border/60 hover:border-border",
               )}
             >
-              <HugeiconsIcon icon={o.icon} size={18} strokeWidth={1.5} />
+              <o.icon size={18} strokeWidth={1.5} />
               <span className="text-[11.5px]">{o.label}</span>
             </button>
           ))}
@@ -321,7 +318,7 @@ export function GeneralSection() {
         <Label>Agents</Label>
         <SettingRow
           title="Coding agent notifications"
-          description="Alert when Claude Code or Codex running in a terminal needs your input or finishes. Desktop notification when Terax is unfocused, in-app otherwise."
+          description="Alert when Claude Code or Codex running in a terminal needs your input or finishes. Desktop notification when FeatherCode is unfocused, in-app otherwise."
         >
           <Switch
             checked={agentNotifications}
@@ -335,7 +332,7 @@ export function GeneralSection() {
         <div className="flex flex-col gap-2">
           <SettingRow
             title="Launch at login"
-            description="Open Terax automatically when you sign in."
+            description="Open FeatherCode automatically when you sign in."
           >
             <Switch
               checked={autostart}

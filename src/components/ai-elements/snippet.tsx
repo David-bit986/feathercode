@@ -1,3 +1,4 @@
+import {  CircleCheck, Copy } from "lucide-react";
 "use client";
 
 import {
@@ -8,8 +9,8 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
-import { CheckmarkCircle01Icon, CopyIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import type { ComponentProps } from "react";
 import {
   createContext,
@@ -129,7 +130,7 @@ export const SnippetCopyButton = ({
     []
   );
 
-  const Icon = isCopied ? CheckmarkCircle01Icon : CopyIcon;
+  const Icon = isCopied ? CircleCheck : Copy;
 
   return (
     <InputGroupButton
@@ -140,7 +141,7 @@ export const SnippetCopyButton = ({
       title="Copy"
       {...props}
     >
-      {children ?? <HugeiconsIcon icon={Icon} size={14} className="size-3.5" />}
+      {children ?? <Icon size={14} className="size-3.5" />}
     </InputGroupButton>
   );
 };

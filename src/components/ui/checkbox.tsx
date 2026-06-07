@@ -1,9 +1,10 @@
+import { Check, Minus } from "lucide-react";
 import * as React from "react"
 import { Checkbox as CheckboxPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { MinusSignIcon, Tick02Icon } from "@hugeicons/core-free-icons"
+
+
 
 function Checkbox({
   className,
@@ -22,13 +23,11 @@ function Checkbox({
         data-slot="checkbox-indicator"
         className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
       >
-        <HugeiconsIcon
-          icon={Tick02Icon}
+        <Check
           strokeWidth={2}
           className="hidden group-data-[state=checked]:block"
         />
-        <HugeiconsIcon
-          icon={MinusSignIcon}
+        <Minus
           strokeWidth={2.5}
           className="hidden group-data-[state=indeterminate]:block"
         />

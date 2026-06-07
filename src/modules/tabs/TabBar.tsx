@@ -1,3 +1,4 @@
+import { Clock, GitBranch, GitCompare, Globe, Pencil, Plus, TerminalSquare, VenetianMask, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -16,18 +17,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmtShortcut, MOD_KEY } from "@/lib/platform";
 import { cn } from "@/lib/utils";
 import { fileIconUrl } from "@/modules/explorer/lib/iconResolver";
-import {
-  Cancel01Icon,
-  Clock01Icon,
-  ComputerTerminal02Icon,
-  GitBranchIcon,
-  GitCompareIcon,
-  Globe02Icon,
-  IncognitoIcon,
-  PencilEdit02Icon,
-  PlusSignIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { useEffect, useRef, useState } from "react";
 import { labelFor } from "./lib/tabLabel";
 import type { EditorTab, Tab } from "./lib/useTabs";
@@ -36,10 +27,8 @@ type Props = {
   tabs: Tab[];
   activeId: number;
   onSelect: (id: number) => void;
-  onNew: () => void;
-  onNewPrivate: () => void;
-  onNewPreview: () => void;
   onNewEditor: () => void;
+  onNewPreview: () => void;
   onNewGitGraph: () => void;
   onClose: (id: number) => void;
   /** Pin (promote) a preview tab to persistent on double-click. */
@@ -53,10 +42,8 @@ export function TabBar({
   tabs,
   activeId,
   onSelect,
-  onNew,
-  onNewPrivate,
-  onNewPreview,
   onNewEditor,
+  onNewPreview,
   onNewGitGraph,
   onClose,
   onPin,
@@ -187,8 +174,7 @@ export function TabBar({
                       }}
                       className="rounded p-0.5 opacity-0 transition-opacity hover:bg-accent hover:opacity-100 group-hover:opacity-60"
                     >
-                      <HugeiconsIcon
-                        icon={Cancel01Icon}
+                      <X
                         size={11}
                         strokeWidth={2}
                       />
@@ -207,8 +193,7 @@ export function TabBar({
                     onCloseAutoFocus={(e) => e.preventDefault()}
                   >
                     <ContextMenuItem onSelect={() => setEditingId(t.id)}>
-                      <HugeiconsIcon
-                        icon={PencilEdit02Icon}
+                      <Pencil
                         size={14}
                         strokeWidth={1.75}
                       />
@@ -218,8 +203,7 @@ export function TabBar({
                       <>
                         <ContextMenuSeparator />
                         <ContextMenuItem onSelect={() => onClose(t.id)}>
-                          <HugeiconsIcon
-                            icon={Cancel01Icon}
+                          <X
                             size={14}
                             strokeWidth={1.75}
                           />
@@ -241,35 +225,12 @@ export function TabBar({
               className="size-7 shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
               title="New tab"
             >
-              <HugeiconsIcon icon={PlusSignIcon} size={14} strokeWidth={2} />
+              <Plus size={14} strokeWidth={2} />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-44">
-            <DropdownMenuItem onSelect={() => onNew()}>
-              <HugeiconsIcon
-                icon={ComputerTerminal02Icon}
-                size={14}
-                strokeWidth={1.75}
-              />
-              <span className="flex-1">Terminal</span>
-              <span className="text-xs text-muted-foreground">
-                {fmtShortcut(MOD_KEY, "T")}
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onNewPrivate()}>
-              <HugeiconsIcon
-                icon={IncognitoIcon}
-                size={14}
-                strokeWidth={1.75}
-              />
-              <span className="flex-1">Privacy</span>
-              <span className="text-xs text-muted-foreground">
-                {fmtShortcut(MOD_KEY, "R")}
-              </span>
-            </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onNewEditor()}>
-              <HugeiconsIcon
-                icon={PencilEdit02Icon}
+              <Pencil
                 size={14}
                 strokeWidth={1.75}
               />
@@ -279,14 +240,14 @@ export function TabBar({
               </span>
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onNewPreview()}>
-              <HugeiconsIcon icon={Globe02Icon} size={14} strokeWidth={1.75} />
+              <Globe size={14} strokeWidth={1.75} />
               <span className="flex-1">Preview</span>
               <span className="text-xs text-muted-foreground">
                 {fmtShortcut(MOD_KEY, "P")}
               </span>
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onNewGitGraph()}>
-              <HugeiconsIcon icon={GitBranchIcon} size={14} strokeWidth={1.75} />
+              <GitBranch size={14} strokeWidth={1.75} />
               <span className="flex-1">Git Graph</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -303,8 +264,7 @@ function TabIcon({ tab }: { tab: Tab }) {
   }
   if (tab.kind === "preview") {
     return (
-      <HugeiconsIcon
-        icon={Globe02Icon}
+      <Globe
         size={14}
         strokeWidth={2}
         className="shrink-0"
@@ -313,8 +273,7 @@ function TabIcon({ tab }: { tab: Tab }) {
   }
   if (tab.kind === "ai-diff") {
     return (
-      <HugeiconsIcon
-        icon={GitCompareIcon}
+      <GitCompare
         size={14}
         strokeWidth={2}
         className="shrink-0"
@@ -323,8 +282,7 @@ function TabIcon({ tab }: { tab: Tab }) {
   }
   if (tab.kind === "terminal" && tab.private) {
     return (
-      <HugeiconsIcon
-        icon={IncognitoIcon}
+      <VenetianMask
         size={14}
         strokeWidth={2}
         className="shrink-0"
@@ -333,8 +291,7 @@ function TabIcon({ tab }: { tab: Tab }) {
   }
   if (tab.kind === "git-diff" || tab.kind === "git-commit-file") {
     return (
-      <HugeiconsIcon
-        icon={GitCompareIcon}
+      <GitCompare
         size={14}
         strokeWidth={2}
         className="shrink-0"
@@ -343,8 +300,7 @@ function TabIcon({ tab }: { tab: Tab }) {
   }
   if (tab.kind === "git-history") {
     return (
-      <HugeiconsIcon
-        icon={Clock01Icon}
+      <Clock
         size={14}
         strokeWidth={2}
         className="shrink-0"
@@ -352,8 +308,7 @@ function TabIcon({ tab }: { tab: Tab }) {
     );
   }
   return (
-    <HugeiconsIcon
-      icon={ComputerTerminal02Icon}
+    <TerminalSquare
       size={14}
       strokeWidth={2}
       className="shrink-0"

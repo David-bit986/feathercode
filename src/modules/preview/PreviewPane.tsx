@@ -1,5 +1,4 @@
-import { Alert02Icon, Globe02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { Globe, TriangleAlert } from "lucide-react";
 import {
   forwardRef,
   useEffect,
@@ -76,9 +75,8 @@ export const PreviewPane = forwardRef<PreviewPaneHandle, Props>(
           onReload={() => setNonce((n) => n + 1)}
         />
         {showXfoHint ? (
-          <div className="flex h-7 shrink-0 items-center gap-1.5 border-b border-border/60 bg-amber-500/8 px-3 text-[11px] text-amber-600 dark:text-amber-400">
-            <HugeiconsIcon
-              icon={Alert02Icon}
+           <div className="flex h-7 shrink-0 items-center gap-1.5 border-b border-border/60 bg-muted px-3 text-[11px] text-muted-foreground">
+            <TriangleAlert
               size={12}
               strokeWidth={1.75}
               className="shrink-0"
@@ -92,7 +90,7 @@ export const PreviewPane = forwardRef<PreviewPaneHandle, Props>(
         <div
           className={
             url
-              ? "relative min-h-0 flex-1 bg-white"
+              ? "relative min-h-0 flex-1 bg-background"
               : "relative min-h-0 flex-1 bg-background"
           }
         >
@@ -134,7 +132,7 @@ function SuspendedState({ onReload }: { onReload: () => void }) {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center">
       <div className="flex size-10 items-center justify-center rounded-2xl border border-border/60 bg-card text-muted-foreground">
-        <HugeiconsIcon icon={Globe02Icon} size={18} strokeWidth={1.5} />
+        <Globe size={18} strokeWidth={1.5} />
       </div>
       <div className="space-y-1">
         <p className="text-[12.5px] font-medium text-foreground">
@@ -159,7 +157,7 @@ function EmptyState() {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-4 px-6 text-center">
       <div className="flex size-12 items-center justify-center rounded-2xl border border-border/60 bg-card text-muted-foreground">
-        <HugeiconsIcon icon={Globe02Icon} size={20} strokeWidth={1.5} />
+        <Globe size={20} strokeWidth={1.5} />
       </div>
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-foreground">

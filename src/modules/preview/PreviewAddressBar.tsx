@@ -1,3 +1,4 @@
+import { ExternalLink, Globe, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,12 +7,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  ArrowReloadHorizontalIcon,
-  Globe02Icon,
-  LinkSquare02Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
+
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
   forwardRef,
@@ -120,8 +117,7 @@ export const PreviewAddressBar = forwardRef<PreviewAddressBarHandle, Props>(
           title="Reload"
           className="size-7 shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
         >
-          <HugeiconsIcon
-            icon={ArrowReloadHorizontalIcon}
+          <RefreshCw
             size={14}
             strokeWidth={1.75}
           />
@@ -135,8 +131,7 @@ export const PreviewAddressBar = forwardRef<PreviewAddressBarHandle, Props>(
               title="Common dev-server ports"
               className="h-7 shrink-0 gap-1 rounded-md px-1.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
             >
-              <HugeiconsIcon
-                icon={Globe02Icon}
+              <Globe
                 size={13}
                 strokeWidth={1.75}
               />
@@ -195,15 +190,14 @@ export const PreviewAddressBar = forwardRef<PreviewAddressBarHandle, Props>(
           className="size-7 shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
           disabled={!url}
         >
-          <HugeiconsIcon
-            icon={LinkSquare02Icon}
+          <ExternalLink
             size={14}
             strokeWidth={1.75}
           />
         </Button>
       </div>
       {notice ? (
-        <div className="flex items-center gap-1.5 bg-amber-500/8 px-3 py-1 text-[11px] text-amber-600 dark:text-amber-400">
+        <div className="flex items-center gap-1.5 bg-muted px-3 py-1 text-[11px] text-muted-foreground">
           <span className="truncate">{notice}</span>
           <button
             type="button"

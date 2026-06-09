@@ -153,6 +153,8 @@ function injectEnvIntoLastUser(
 
 function formatEnvBlock(live: LiveSnapshot): string | null {
   const lines: string[] = [];
+  const platform = navigator.userAgent.includes("Windows") ? "Windows" : navigator.userAgent.includes("Mac") ? "macOS" : "Linux";
+  lines.push(`os: ${platform}`);
   if (live.workspaceRoot) lines.push(`workspace_root: ${live.workspaceRoot}`);
   if (live.cwd) lines.push(`active_terminal_cwd: ${live.cwd}`);
   if (live.activeFile) lines.push(`active_file: ${live.activeFile}`);

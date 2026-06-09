@@ -34,6 +34,7 @@ const TOOL_META: Record<string, { label: string; icon: typeof File }> = {
   suggest_command: { label: "Suggest", icon: Sparkles },
   open_preview: { label: "Preview", icon: Eye },
   run_subagent: { label: "Subagent", icon: Bot },
+  spawn_coding_agent: { label: "Agent", icon: Bot },
   todo_write: { label: "Todos", icon: ListChecks },
 };
 
@@ -86,7 +87,8 @@ function deriveSummary(toolName: string, input: unknown): string | null {
     case "open_preview":
       return str("path") ?? str("url");
     case "run_subagent":
-      return str("agent") ?? str("task");
+    case "spawn_coding_agent":
+      return str("agent") ?? str("task") ?? str("prompt");
     case "todo_write": {
       const items = Array.isArray(i.todos) ? i.todos : null;
       return items
@@ -116,6 +118,7 @@ const HEAVY_CONTENT_TOOLS = new Set([
   "edit",
   "multi_edit",
   "run_subagent",
+  "spawn_coding_agent",
   "todo_write",
 ]);
 
@@ -176,6 +179,22 @@ const ToolImpl = ({
             failed
           </span>
         )}
+        {toolName === "spawn_coding_agent" && output != null && typeof output === "object" && "tab_id" in (output as Record<string, unknown>) ? (
+          <button
+            type="button"
+            className="shrink-0 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary hover:bg-primary/20"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.dispatchEvent(
+                new CustomEvent("fc:focus-pane", {
+                  detail: { tabId: (output as Record<string, unknown>).tab_id },
+                })
+              );
+            }}
+          >
+            View Agent
+          </button>
+        ) : null}
       </CollapsibleTrigger>
 
       {hasDetails && (

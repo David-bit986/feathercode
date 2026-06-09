@@ -104,14 +104,16 @@ function ChatPanel({ sessionId }: { sessionId: string }) {
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 relative">
-        <AiChatView
-          messages={helpers.messages}
-          status={helpers.status}
-          error={helpers.error}
-          clearError={helpers.clearError}
-          addToolApprovalResponse={helpers.addToolApprovalResponse}
-          stop={helpers.stop}
-        />
+        <div className="absolute inset-0">
+          <AiChatView
+            messages={helpers.messages}
+            status={helpers.status}
+            error={helpers.error}
+            clearError={helpers.clearError}
+            addToolApprovalResponse={helpers.addToolApprovalResponse}
+            stop={helpers.stop}
+          />
+        </div>
       </div>
       <div className="shrink-0 border-t border-border/60 p-2">
         <AiInputBar />

@@ -224,6 +224,20 @@ export default function App() {
     setActiveEditorHandle(editorRefs.current.get(activeId) ?? null);
   }, [activeId, activeLeafId]);
 
+  useEffect(() => {
+    const onFocusPane = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && detail.tabId !== undefined) {
+        setActiveId(detail.tabId);
+        if (detail.leafId !== undefined) {
+          focusPane(detail.tabId, detail.leafId);
+        }
+      }
+    };
+    window.addEventListener("fc:focus-pane", onFocusPane);
+    return () => window.removeEventListener("fc:focus-pane", onFocusPane);
+  }, [setActiveId, focusPane]);
+
   const handleSearchReady = useCallback(
     (leafId: number, addon: SearchAddon) => {
       searchAddons.current.set(leafId, addon);

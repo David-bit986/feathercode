@@ -143,11 +143,16 @@ function createSlot(): Slot {
   host.setAttribute("data-fc-slot", String(slots.length));
   // Prevent browser "Save image" / "Copy image" context menu on WebGL canvas.
   host.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
     const sel = term.getSelection();
-    if (sel) {
-      e.preventDefault();
+    if (sel && sel.length > 0) {
       void navigator.clipboard.writeText(sel).catch(() => {});
       term.clearSelection();
+    } else {
+      // Right-click with no selection pastes clipboard content
+      void navigator.clipboard.readText().then((text) => {
+        if (text) term.paste(text);
+      }).catch(() => {});
     }
   });
   getRecycler().appendChild(host);

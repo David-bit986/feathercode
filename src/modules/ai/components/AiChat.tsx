@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 
 import { SLASH_COMMANDS, FC_CMD_RE } from "../lib/slashCommands";
 import { Spinner } from "@/components/ui/spinner";
-import { useChatStore } from "../store/chatStore";
+import { useAgentMetaStore } from "../store/agentMetaStore";
 import { sendMessage } from "../store/chatRuntime";
 import type {
   ChatStatus,
@@ -187,10 +187,10 @@ export function AiChatView({
     status === "streaming" && lastMessage?.role === "assistant"
       ? lastMessage.id
       : null;
-  const step = useChatStore((s) => s.agentMeta.step);
-  const hitStepCap = useChatStore((s) => s.agentMeta.hitStepCap);
-  const compactionNotice = useChatStore((s) => s.agentMeta.compactionNotice);
-  const patchAgentMeta = useChatStore((s) => s.patchAgentMeta);
+  const step = useAgentMetaStore((s) => s.agentMeta.step);
+  const hitStepCap = useAgentMetaStore((s) => s.agentMeta.hitStepCap);
+  const compactionNotice = useAgentMetaStore((s) => s.agentMeta.compactionNotice);
+  const patchAgentMeta = useAgentMetaStore((s) => s.patchAgentMeta);
   const showContinue =
     !isBusy && hitStepCap && lastMessage?.role === "assistant";
 

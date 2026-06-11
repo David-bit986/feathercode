@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { native } from "../lib/native";
 import { checkWritableCanonical } from "../lib/security";
+import { toolGate } from "../lib/toolGate";
 import { newQueuedEditId, usePlanStore } from "../store/planStore";
 import { resolvePath, type ToolContext } from "./context";
 
@@ -132,6 +133,7 @@ export function buildEditTools(ctx: ToolContext) {
       }),
       needsApproval: true,
       execute: async ({ path, old_string, new_string, replace_all }) => {
+        toolGate.validateWrite(path);
         const reqPath = resolvePath(path, ctx.getCwd());
         const safety = await checkWritableCanonical(reqPath, native.canonicalize);
         if (!safety.ok) return { error: safety.reason, path: reqPath };
@@ -169,6 +171,7 @@ export function buildEditTools(ctx: ToolContext) {
       }),
       needsApproval: true,
       execute: async ({ path, edits }) => {
+        toolGate.validateWrite(path);
         const reqPath = resolvePath(path, ctx.getCwd());
         const safety = await checkWritableCanonical(reqPath, native.canonicalize);
         if (!safety.ok) return { error: safety.reason, path: reqPath };

@@ -5,6 +5,7 @@ import {
   checkReadableCanonical,
   checkWritableCanonical,
 } from "../lib/security";
+import { toolGate } from "../lib/toolGate";
 import { newQueuedEditId, usePlanStore } from "../store/planStore";
 import { resolvePath, type ToolContext } from "./context";
 
@@ -41,6 +42,7 @@ export function buildFsTools(ctx: ToolContext) {
           .describe("Max lines to return. Default 2000."),
       }),
       execute: async ({ path, offset, limit }) => {
+        toolGate.validateRead(path);
         const reqPath = resolvePath(path, ctx.getCwd());
         const safety = await checkReadableCanonical(reqPath, native.canonicalize);
         if (!safety.ok) return { error: safety.reason, path: reqPath };
@@ -117,6 +119,7 @@ export function buildFsTools(ctx: ToolContext) {
           .describe("Absolute path, or relative to the active terminal cwd."),
       }),
       execute: async ({ path }) => {
+        toolGate.validateRead(path);
         const reqPath = resolvePath(path, ctx.getCwd());
         const safety = await checkReadableCanonical(reqPath, native.canonicalize);
         if (!safety.ok) return { error: safety.reason, path: reqPath };
@@ -142,6 +145,7 @@ export function buildFsTools(ctx: ToolContext) {
       }),
       needsApproval: true,
       execute: async ({ path, content }) => {
+        toolGate.validateWrite(path);
         const reqPath = resolvePath(path, ctx.getCwd());
         const safety = await checkWritableCanonical(reqPath, native.canonicalize);
         if (!safety.ok) return { error: safety.reason, path: reqPath };
@@ -189,6 +193,7 @@ export function buildFsTools(ctx: ToolContext) {
       }),
       needsApproval: true,
       execute: async ({ path }) => {
+        toolGate.validateWrite(path);
         const reqPath = resolvePath(path, ctx.getCwd());
         const safety = await checkWritableCanonical(reqPath, native.canonicalize);
         if (!safety.ok) return { error: safety.reason, path: reqPath };

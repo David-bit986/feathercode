@@ -1,4 +1,4 @@
-import { type RefObject, useCallback, useEffect, useState } from "react";
+import { type RefObject, useCallback, useEffect } from "react";
 import { homeDir } from "@tauri-apps/api/path";
 import { native } from "@/modules/ai/lib/native";
 import type { Tab } from "@/modules/tabs";
@@ -6,6 +6,7 @@ import {
   getWslHome,
   LOCAL_WORKSPACE,
   type WorkspaceEnv,
+  useWorkspaceStore,
 } from "@/modules/workspace";
 
 type Params = {
@@ -13,15 +14,9 @@ type Params = {
   workspaceEnv: WorkspaceEnv;
   setWorkspaceEnv: (env: WorkspaceEnv) => void;
   resetWorkspace: (home?: string) => void;
-  /** Dispose live sessions and clear App-owned pane/handle ref maps. */
   clearWorkspaceState: () => void;
 };
 
-/**
- * Owns the resolved home / launch cwd and the local⇄WSL workspace switch. The
- * switch tears down live sessions (via clearWorkspaceState), re-authorizes the
- * new home, and resets the tab workspace.
- */
 export function useWorkspaceSwitcher({
   tabsRef,
   workspaceEnv,
@@ -29,9 +24,9 @@ export function useWorkspaceSwitcher({
   resetWorkspace,
   clearWorkspaceState,
 }: Params) {
-  const [home, setHome] = useState<string | null>(null);
-  const [launchCwd, setLaunchCwd] = useState<string | null>(null);
-  const [launchCwdResolved, setLaunchCwdResolved] = useState(false);
+  const setHome = useWorkspaceStore((s) => s.setHome);
+  const setLaunchCwd = useWorkspaceStore((s) => s.setLaunchCwd);
+  const setLaunchCwdResolved = useWorkspaceStore((s) => s.setLaunchCwdResolved);
 
   useEffect(() => {
     homeDir()
@@ -41,11 +36,10 @@ export function useWorkspaceSwitcher({
         try {
           await native.workspaceAuthorize(normalized);
         } catch {
-          // Bootstrap already authorizes home from Rust; ignore.
         }
       })
       .catch(() => setHome(null));
-  }, []);
+  }, [setHome]);
 
   useEffect(() => {
     native
@@ -53,7 +47,7 @@ export function useWorkspaceSwitcher({
       .then(setLaunchCwd)
       .catch(() => setLaunchCwd(null))
       .finally(() => setLaunchCwdResolved(true));
-  }, []);
+  }, [setLaunchCwd, setLaunchCwdResolved]);
 
   const switchWorkspace = useCallback(
     async (env: WorkspaceEnv) => {
@@ -92,7 +86,6 @@ export function useWorkspaceSwitcher({
         try {
           await native.workspaceAuthorize(nextHome);
         } catch {
-          // Non-fatal — git panel will surface "not authorized" if needed.
         }
       }
       resetWorkspace(nextHome ?? undefined);
@@ -103,6 +96,8 @@ export function useWorkspaceSwitcher({
       resetWorkspace,
       tabsRef,
       clearWorkspaceState,
+      setHome,
+      setLaunchCwd,
     ],
   );
 
@@ -122,12 +117,11 @@ export function useWorkspaceSwitcher({
       try {
         await native.workspaceAuthorize(normalized);
       } catch {
-        // Non-fatal
       }
       resetWorkspace(normalized);
     },
-    [tabsRef, clearWorkspaceState, setWorkspaceEnv, resetWorkspace]
+    [tabsRef, clearWorkspaceState, setWorkspaceEnv, resetWorkspace, setLaunchCwd]
   );
 
-  return { home, launchCwd, launchCwdResolved, switchWorkspace, openFolderWorkspace };
+  return { switchWorkspace, openFolderWorkspace };
 }

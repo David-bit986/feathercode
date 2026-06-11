@@ -8,3 +8,5 @@ export {
   type WorkspaceEnv,
   type WslDistro,
 } from "./env";
+export { useWorkspaceStore } from "./store";
+export { useWorkspaceCwd } from "./lib/useWorkspaceCwd";

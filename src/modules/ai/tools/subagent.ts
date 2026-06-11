@@ -3,6 +3,7 @@ import { z } from "zod";
 import { runSubagent } from "../agents/runSubagent";
 import { SUBAGENTS, type SubagentType } from "../agents/registry";
 import { useChatStore } from "../store/chatStore";
+import { useAgentMetaStore } from "../store/agentMetaStore";
 import type { ToolContext } from "./context";
 
 const TYPE_KEYS = Object.keys(SUBAGENTS) as [SubagentType, ...SubagentType[]];
@@ -29,8 +30,9 @@ Auto-executes (no approval) — subagents are read-only by design.`,
           .describe("Short label shown in the chat UI for the spawn card."),
       }),
       execute: async ({ type, prompt, description }) => {
-        const { apiKeys, selectedModelId, patchAgentMeta } =
+        const { apiKeys, selectedModelId } =
           useChatStore.getState();
+        const patchAgentMeta = useAgentMetaStore.getState().patchAgentMeta;
         try {
           const r = await runSubagent({
             type,

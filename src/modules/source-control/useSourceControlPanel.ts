@@ -6,6 +6,7 @@ import {
   type GitStatusSnapshot,
 } from "@/modules/ai/lib/native";
 import { useChatStore } from "@/modules/ai/store/chatStore";
+import { useAgentMetaStore } from "@/modules/ai/store/agentMetaStore";
 import { providerNeedsKey, resolveModel } from "@/modules/ai/config";
 import {
   invalidateDiff,
@@ -367,7 +368,7 @@ export function useSourceControlPanel(
     | null,
 ): SourceControlPanelState {
   const selectedModelId = useChatStore((state) => state.selectedModelId);
-  const agentStatus = useChatStore((state) => state.agentMeta.status);
+  const agentStatus = useAgentMetaStore((state) => state.agentMeta.status);
   const hasApiKeyForSelected = useChatStore((state) => {
     const model = resolveModel(state.selectedModelId);
     return !providerNeedsKey(model.provider) || !!state.apiKeys[model.provider];

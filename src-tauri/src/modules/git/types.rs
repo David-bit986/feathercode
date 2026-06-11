@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::path::PathBuf;
 
 pub(crate) const DEFAULT_TIMEOUT_SECS: u64 = 30;
 pub(crate) const NETWORK_TIMEOUT_SECS: u64 = 120;
@@ -135,5 +136,32 @@ impl TextSource {
             TextSource::Text(text) => text,
             TextSource::Missing | TextSource::Binary => String::new(),
         }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct GitContext {
+    pub repo_root: String,
+    pub local_path: PathBuf,
+    pub workspace: crate::modules::workspace::WorkspaceEnv,
+}
+
+impl GitContext {
+    pub fn guard(
+        registry: &crate::modules::workspace::WorkspaceRegistry,
+        path: &str,
+        workspace: &crate::modules::workspace::WorkspaceEnv,
+    ) -> Result<Self, crate::modules::git::errors::GitError> {
+        let resolved = crate::modules::git::utils::canonical_dir(registry, path, workspace)?;
+        if !registry.is_authorized(&resolved.local_path) {
+            return Err(crate::modules::git::errors::GitError::PathOutsideWorkspace(
+                resolved.local_path.clone(),
+            ));
+        }
+        Ok(Self {
+            repo_root: resolved.git_path.clone(),
+            local_path: resolved.local_path.clone(),
+            workspace: resolved.workspace.clone(),
+        })
     }
 }

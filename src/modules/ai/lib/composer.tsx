@@ -9,7 +9,10 @@ import {
 import { useWhisperRecording } from "../hooks/useWhisperRecording";
 import { expandSnippetTokens, type Snippet } from "../lib/snippets";
 import { tryRunSlashCommand, type SlashCommandMeta } from "./slashCommands";
-import { getChat, useChatStore } from "../store/chatStore";
+import { useChatStore } from "../store/chatStore";
+import { getChat } from "../store/sessionsStore";
+import { useSessionsStore } from "../store/sessionsStore";
+import { useAgentMetaStore } from "../store/agentMetaStore";
 import { useSnippetsStore } from "../store/snippetsStore";
 import { currentWorkspaceEnv } from "@/modules/workspace";
 
@@ -71,8 +74,8 @@ type ProviderProps = {
 };
 
 export function AiComposerProvider({ children }: ProviderProps) {
-  const sessionId = useChatStore((s) => s.activeSessionId);
-  const status = useChatStore((s) => s.agentMeta.status);
+  const sessionId = useSessionsStore((s) => s.activeSessionId);
+  const status = useAgentMetaStore((s) => s.agentMeta.status);
   const isBusy = status === "thinking" || status === "streaming";
 
   const [value, setValue] = useState("");
@@ -216,6 +219,7 @@ export function AiComposerProvider({ children }: ProviderProps) {
   };
 
   const submit = () => {
+    if (isBusy) return;
     const trimmed = value.trim();
     if (
       !trimmed &&
@@ -303,8 +307,7 @@ export function AiComposerProvider({ children }: ProviderProps) {
     }
 
     if (!sessionId) return;
-    const store = useChatStore.getState();
-    store.patchAgentMeta({ hitStepCap: false, compactionNotice: null });
+    useAgentMetaStore.getState().patchAgentMeta({ hitStepCap: false, compactionNotice: null });
     void (async () => {
       const { getOrCreateChat } = await import("../store/chatRuntime");
       const chat = getOrCreateChat(sessionId);

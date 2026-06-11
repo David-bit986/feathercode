@@ -195,6 +195,10 @@ function describeProtected(dir: string): string {
   return dir.replace(/^\//, "");
 }
 
+export function isSecretPath(path: string): boolean {
+  return !checkReadable(path).ok;
+}
+
 export function checkReadable(path: string): SafetyResult {
   if (typeof path !== "string" || path.length === 0) {
     return { ok: false, reason: "Refused: empty path." };

@@ -8,25 +8,25 @@ use crate::modules::git::process::{
     read_text_file, run_git,
 };
 use crate::modules::git::types::{
-    DiscardEntry, GitCommitFileChange, GitCommitResult, GitDiffContentResult, GitDiffResult,
-    GitLogEntry, GitOutput, GitPanelSnapshot, GitPushResult, GitRepoInfo, GitStatusSnapshot,
-    TextSource, DEFAULT_TIMEOUT_SECS, NETWORK_TIMEOUT_SECS,
+    DiscardEntry, GitCommitFileChange, GitCommitResult, GitContext, GitDiffContentResult,
+    GitDiffResult, GitLogEntry, GitOutput, GitPanelSnapshot, GitPushResult, GitRepoInfo,
+    GitStatusSnapshot, TextSource, DEFAULT_TIMEOUT_SECS, NETWORK_TIMEOUT_SECS,
 };
 use crate::modules::git::utils::{
-    authorized_repo_root, canonical_dir, resolve_within_repo, split_upstream, ResolvedGitDirectory,
+    canonical_dir, resolve_within_repo, split_upstream, ResolvedGitDirectory,
 };
-use crate::modules::workspace::{WorkspaceEnv, WorkspaceRegistry};
+use crate::modules::workspace::WorkspaceRegistry;
 
 pub fn resolve_repo(
     registry: &WorkspaceRegistry,
-    cwd: &str,
-    workspace: &WorkspaceEnv,
+    ctx: &GitContext,
 ) -> Result<Option<GitRepoInfo>> {
-    let cwd = canonical_dir(registry, cwd, workspace)?;
-    if !registry.is_authorized(&cwd.local_path) {
-        return Err(GitError::PathOutsideWorkspace(cwd.local_path));
-    }
-    ensure_git_available(&cwd.workspace)?;
+    ensure_git_available(&ctx.workspace)?;
+    let cwd = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     resolve_repo_in_authorized(registry, &cwd)
 }
 
@@ -79,19 +79,11 @@ fn resolve_repo_in_authorized(
     }))
 }
 
-pub fn panel_snapshot(
-    registry: &WorkspaceRegistry,
-    cwd: &str,
-    workspace: &WorkspaceEnv,
-) -> Result<GitPanelSnapshot> {
-    let cwd = canonical_dir(registry, cwd, workspace)?;
-    if !registry.is_authorized(&cwd.local_path) {
-        return Err(GitError::PathOutsideWorkspace(cwd.local_path));
-    }
-    ensure_git_available(&cwd.workspace)?;
+pub fn panel_snapshot(ctx: &GitContext) -> Result<GitPanelSnapshot> {
+    ensure_git_available(&ctx.workspace)?;
     let Some(root_line) = git_stdout_line_opt(
-        &cwd.workspace,
-        &cwd.git_path,
+        &ctx.workspace,
+        &ctx.repo_root,
         ["rev-parse", "--show-toplevel"],
     )?
     else {
@@ -100,8 +92,11 @@ pub fn panel_snapshot(
             status: None,
         });
     };
-    let canonical_root = canonical_dir(registry, &root_line, &cwd.workspace)?;
-    let _ = registry.authorize(&canonical_root.local_path);
+    let canonical_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: root_line.clone(),
+        local_path: ctx.local_path.clone(),
+    };
 
     let status = status_inner(&canonical_root)?;
     let repo = GitRepoInfo {
@@ -116,12 +111,12 @@ pub fn panel_snapshot(
     })
 }
 
-pub fn status(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
-    workspace: &WorkspaceEnv,
-) -> Result<GitStatusSnapshot> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+pub fn status(ctx: &GitContext) -> Result<GitStatusSnapshot> {
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     status_inner(&repo_root)
 }
@@ -157,13 +152,15 @@ fn status_inner(repo_root: &ResolvedGitDirectory) -> Result<GitStatusSnapshot> {
 }
 
 pub fn diff(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     path: Option<&str>,
     staged: bool,
-    workspace: &WorkspaceEnv,
 ) -> Result<GitDiffResult> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     diff_inner(&repo_root, path, staged)
 }
@@ -204,14 +201,16 @@ fn diff_inner(
 }
 
 pub fn diff_content(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     path: &str,
     staged: bool,
     original_path: Option<&str>,
-    workspace: &WorkspaceEnv,
 ) -> Result<GitDiffContentResult> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     let worktree_path = resolve_within_repo(&repo_root.local_path, path)?;
     let rel_path = pathspec(&repo_root.local_path, &worktree_path);
@@ -261,12 +260,14 @@ pub fn diff_content(
 }
 
 pub fn stage(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     paths: &[String],
-    workspace: &WorkspaceEnv,
 ) -> Result<()> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     if paths.is_empty() {
         return Ok(());
@@ -286,12 +287,14 @@ pub fn stage(
 }
 
 pub fn unstage(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     paths: &[String],
-    workspace: &WorkspaceEnv,
 ) -> Result<()> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     if paths.is_empty() {
         return Ok(());
@@ -340,12 +343,14 @@ fn looks_like_no_head(output: &GitOutput) -> bool {
 }
 
 pub fn discard(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     entries: &[DiscardEntry],
-    workspace: &WorkspaceEnv,
 ) -> Result<()> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     if entries.is_empty() {
         return Ok(());
@@ -394,12 +399,14 @@ pub fn discard(
 }
 
 pub fn commit(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     message: &str,
-    workspace: &WorkspaceEnv,
 ) -> Result<GitCommitResult> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     let trimmed = message.trim();
     if trimmed.is_empty() {
@@ -434,12 +441,12 @@ pub fn commit(
     })
 }
 
-pub fn push(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
-    workspace: &WorkspaceEnv,
-) -> Result<GitPushResult> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+pub fn push(ctx: &GitContext) -> Result<GitPushResult> {
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
 
     let upstream = git_stdout_line_opt(
@@ -472,13 +479,15 @@ const LOG_FORMAT: &str = "%H%x1f%an%x1f%ae%x1f%at%x1f%P%x1f%s";
 const MAX_LOG_LIMIT: u32 = 200;
 
 pub fn log(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     limit: u32,
     before_sha: Option<&str>,
-    workspace: &WorkspaceEnv,
 ) -> Result<Vec<GitLogEntry>> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     let bounded = limit.clamp(1, MAX_LOG_LIMIT);
     let count_arg = format!("--max-count={bounded}");
@@ -524,13 +533,6 @@ pub fn log(
     }
     let stdout = std::str::from_utf8(&output.stdout).unwrap_or("");
     let mut entries: Vec<GitLogEntry> = Vec::with_capacity(bounded as usize);
-    // Lines we get back interleave:
-    //   <sha>\x1f<author>\x1f<email>\x1f<ts>\x1f<parents>\x1f<subject>
-    //   <blank>
-    //    5 files changed, 12 insertions(+), 3 deletions(-)
-    // Commits without diffstats (root commits, merges with no changes) just
-    // skip the shortstat line. Detect commit headers by the presence of
-    // the unit-separator we put in the format.
     for raw_line in stdout.lines() {
         let line = raw_line.trim_end_matches('\r');
         if line.is_empty() {
@@ -579,12 +581,14 @@ pub fn log(
 }
 
 pub fn show_commit_diff(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     sha: &str,
-    workspace: &WorkspaceEnv,
 ) -> Result<GitDiffResult> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     if !sha_is_safe(sha) {
         return Err(GitError::command("git show", "invalid commit identifier"));
@@ -614,7 +618,6 @@ pub fn show_commit_diff(
 }
 
 fn parse_shortstat(tail: &str) -> (u32, u32, u32) {
-    // Looks for a line like " 5 files changed, 12 insertions(+), 3 deletions(-)"
     for line in tail.lines() {
         let trimmed = line.trim();
         if !(trimmed.contains("file changed") || trimmed.contains("files changed")) {
@@ -645,12 +648,14 @@ fn sha_is_safe(sha: &str) -> bool {
 }
 
 pub fn commit_files(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     sha: &str,
-    workspace: &WorkspaceEnv,
 ) -> Result<Vec<GitCommitFileChange>> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     if !sha_is_safe(sha) {
         return Err(GitError::command("git diff-tree", "invalid commit sha"));
@@ -692,9 +697,6 @@ fn split_name_status_numstat(bytes: &[u8]) -> (&[u8], &[u8]) {
     for (idx, tok) in tokens.iter().enumerate() {
         if tok.1.contains('\t') {
             split_at = tok.0;
-            // Walk back: numstat for R/C with -z emits "<a>\t<r>" then two
-            // NUL-separated paths. The two trailing path tokens belong to the
-            // numstat block, not name-status.
             let _ = idx;
             break;
         }
@@ -703,14 +705,16 @@ fn split_name_status_numstat(bytes: &[u8]) -> (&[u8], &[u8]) {
 }
 
 pub fn commit_file_diff(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     sha: &str,
     path: &str,
     original_path: Option<&str>,
-    workspace: &WorkspaceEnv,
 ) -> Result<GitDiffContentResult> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     if !sha_is_safe(sha) {
         return Err(GitError::command("git show", "invalid commit sha"));
@@ -790,12 +794,14 @@ pub fn commit_file_diff(
 }
 
 pub fn remote_url(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
+    ctx: &GitContext,
     name: &str,
-    workspace: &WorkspaceEnv,
 ) -> Result<Option<String>> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     if name.is_empty() || name.len() > 64 || !name.chars().all(is_remote_name_char) {
         return Ok(None);
@@ -918,12 +924,12 @@ fn status_label_for(c: char) -> String {
     }
 }
 
-pub fn fetch(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
-    workspace: &WorkspaceEnv,
-) -> Result<()> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+pub fn fetch(ctx: &GitContext) -> Result<()> {
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     let output = run_git(
         &repo_root.workspace,
@@ -934,12 +940,12 @@ pub fn fetch(
     ensure_success(&output, "git fetch failed")
 }
 
-pub fn pull_ff_only(
-    registry: &WorkspaceRegistry,
-    repo_root: &str,
-    workspace: &WorkspaceEnv,
-) -> Result<()> {
-    let repo_root = authorized_repo_root(registry, repo_root, workspace)?;
+pub fn pull_ff_only(ctx: &GitContext) -> Result<()> {
+    let repo_root = ResolvedGitDirectory {
+        workspace: ctx.workspace.clone(),
+        git_path: ctx.repo_root.clone(),
+        local_path: ctx.local_path.clone(),
+    };
     ensure_git_available(&repo_root.workspace)?;
     let output = run_git(
         &repo_root.workspace,

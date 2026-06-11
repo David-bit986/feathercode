@@ -1,4 +1,4 @@
-import { useChatStore } from "@/modules/ai/store/chatStore";
+import { useSessionsStore } from "@/modules/ai/store/sessionsStore";
 import {
   useManagedAgentsStore,
   type ManagedAgent,
@@ -42,7 +42,7 @@ export function maybeTriggerManagedReview(leafId: number): void {
   const store = useManagedAgentsStore.getState();
   const m = store.get(leafId);
   if (!m || !canReview(m)) return;
-  if (useChatStore.getState().activeSessionId !== m.sessionId) {
+  if (useSessionsStore.getState().activeSessionId !== m.sessionId) {
     store.setPendingReview(leafId, true);
     return;
   }

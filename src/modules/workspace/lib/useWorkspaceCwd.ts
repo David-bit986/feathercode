@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { Tab } from "./useTabs";
+import type { Tab } from "@/modules/tabs";
 
 type Result = {
   explorerRoot: string | null;
@@ -29,9 +29,6 @@ export function useWorkspaceCwd(
 
   const inheritedCwdForNewTab = useCallback((): string | undefined => {
     if (activeTab?.kind === "terminal" && activeTab.cwd) return activeTab.cwd;
-    // Editor tabs inherit the last terminal's cwd (or workspace home), not
-    // the file's folder — opening a new terminal from a file shouldn't
-    // hijack the user's working directory context.
     return lastTerminalCwd.current ?? home ?? undefined;
   }, [activeTab, home]);
 

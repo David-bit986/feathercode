@@ -171,7 +171,7 @@ pub fn spawn(
             let mut buf = [0u8; READ_BUF];
             let mut filtered: Vec<u8> = Vec::with_capacity(READ_BUF);
             let mut da_filter = DaFilter::new();
-            let mut agent_detect = AgentDetector::new();
+            let mut agent_detect = AgentDetector::new(id);
             let mut dropped_bytes: u64 = 0;
             let mut logged_first = false;
             loop {
@@ -182,9 +182,11 @@ pub fn spawn(
                             logged_first = true;
                             log::debug!("pty first byte after {}ms", spawn_at.elapsed().as_millis());
                         }
-                        agent_detect.process(&buf[..n], |t| {
-                            let _ = app_reader.emit(AGENT_EVENT, t.into_signal(id));
-                        });
+                        for &b in &buf[..n] {
+                            for event in agent_detect.feed(b) {
+                                let _ = app_reader.emit(AGENT_EVENT, event.into_signal(id));
+                            }
+                        }
                         filtered.clear();
                         da_filter.process(&buf[..n], &mut filtered, |reply| {
                             if let Ok(mut w) = writer_for_da.lock() {
@@ -210,9 +212,9 @@ pub fn spawn(
                     }
                 }
             }
-            agent_detect.finish(|t| {
-                let _ = app_reader.emit(AGENT_EVENT, t.into_signal(id));
-            });
+            for event in agent_detect.finish() {
+                let _ = app_reader.emit(AGENT_EVENT, event.into_signal(id));
+            }
             pending_r.1.notify_one();
             if dropped_bytes > 0 {
                 log::warn!("pty backpressure: dropped {dropped_bytes} bytes (cap {MAX_PENDING})");

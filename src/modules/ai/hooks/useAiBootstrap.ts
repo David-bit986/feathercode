@@ -9,6 +9,7 @@ import {
 } from "../lib/keyring";
 import { useAgentsStore } from "../store/agentsStore";
 import { useChatStore } from "../store/chatStore";
+import { useSessionsStore } from "../store/sessionsStore";
 import { useSnippetsStore } from "../store/snippetsStore";
 import { useSkillsStore } from "../store/skillsStore";
 
@@ -26,8 +27,8 @@ export function useAiBootstrap(explorerRoot?: string | null): {
   const setApiKeys = useChatStore((s) => s.setApiKeys);
   const setCustomEndpointKeys = useChatStore((s) => s.setCustomEndpointKeys);
   const setSelectedModelId = useChatStore((s) => s.setSelectedModelId);
-  const activeSessionId = useChatStore((s) => s.activeSessionId);
-  const hydrateSessions = useChatStore((s) => s.hydrateSessions);
+  const activeSessionId = useSessionsStore((s) => s.activeSessionId);
+  const hydrateSessions = useSessionsStore((s) => s.hydrateSessions);
 
   useEffect(() => {
     if (activeSessionId) firePendingReviewForSession(activeSessionId);

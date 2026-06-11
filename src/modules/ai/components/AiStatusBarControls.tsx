@@ -31,6 +31,7 @@ import { ProviderLogo } from "../components/ProviderLogo";
 import { ACCEPTED_FILES, useComposer } from "../lib/composer";
 import { toggleFavoriteModel } from "../lib/modelPrefs";
 import { useChatStore } from "../store/chatStore";
+import { useSessionsStore } from "../store/sessionsStore";
 import { usePreferencesStore } from "@/modules/settings/preferences";
 
 export function AiOpenButton({ onOpen }: { onOpen: () => void }) {
@@ -671,11 +672,11 @@ function IconBtn({
 }
 
 function SessionDropdown() {
-  const sessions = useChatStore((s) => s.sessions);
-  const activeId = useChatStore((s) => s.activeSessionId);
-  const switchSession = useChatStore((s) => s.switchSession);
-  const newSession = useChatStore((s) => s.newSession);
-  const deleteSession = useChatStore((s) => s.deleteSession);
+  const sessions = useSessionsStore((s) => s.sessions);
+  const activeId = useSessionsStore((s) => s.activeSessionId);
+  const switchSession = useSessionsStore((s) => s.switchSession);
+  const newSession = useSessionsStore((s) => s.newSession);
+  const deleteSession = useSessionsStore((s) => s.deleteSession);
   const [open, setOpen] = useState(false);
 
   const sorted = useMemo(

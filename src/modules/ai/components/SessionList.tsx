@@ -1,17 +1,17 @@
 import { Check, FileEdit, Plus, Trash2, X } from "lucide-react";
-import { useChatStore } from "../store/chatStore";
+import { useSessionsStore } from "../store/sessionsStore";
 import { useMemo, useRef, useState } from "react";
 
 
 import { cn } from "@/lib/utils";
 
 export function SessionList() {
-  const sessions = useChatStore((s) => s.sessions);
-  const active = useChatStore((s) => s.activeSessionId);
-  const switchSession = useChatStore((s) => s.switchSession);
-  const newSession = useChatStore((s) => s.newSession);
-  const deleteSession = useChatStore((s) => s.deleteSession);
-  const renameSession = useChatStore((s) => s.renameSession);
+  const sessions = useSessionsStore((s) => s.sessions);
+  const active = useSessionsStore((s) => s.activeSessionId);
+  const switchSession = useSessionsStore((s) => s.switchSession);
+  const newSession = useSessionsStore((s) => s.newSession);
+  const deleteSession = useSessionsStore((s) => s.deleteSession);
+  const renameSession = useSessionsStore((s) => s.renameSession);
 
   const sorted = useMemo(
     () => [...sessions].sort((a, b) => b.updatedAt - a.updatedAt),

@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { native } from "../lib/native";
 import { checkReadableCanonical } from "../lib/security";
+import { toolGate } from "../lib/toolGate";
 import { resolvePath, type ToolContext } from "./context";
 
 function resolveRoot(
@@ -67,6 +68,7 @@ export function buildSearchTools(ctx: ToolContext) {
       }) => {
         const r = resolveRoot(root, ctx);
         if (!r.ok) return { error: r.error };
+        toolGate.validateRead(r.path);
         const safety = await checkReadableCanonical(r.path, native.canonicalize);
         if (!safety.ok) return { error: safety.reason, root: r.path };
         r.path = safety.canonical;
@@ -107,6 +109,7 @@ export function buildSearchTools(ctx: ToolContext) {
       execute: async ({ pattern, root, max_results }) => {
         const r = resolveRoot(root, ctx);
         if (!r.ok) return { error: r.error };
+        toolGate.validateRead(r.path);
         const safety = await checkReadableCanonical(r.path, native.canonicalize);
         if (!safety.ok) return { error: safety.reason, root: r.path };
         r.path = safety.canonical;

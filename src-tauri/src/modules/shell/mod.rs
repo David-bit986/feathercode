@@ -1,4 +1,5 @@
 pub mod background;
+pub mod interface;
 pub mod ringbuffer;
 pub mod session;
 
@@ -90,7 +91,7 @@ fn run_blocking(
     workspace: WorkspaceEnv,
     dur: Duration,
 ) -> Result<CommandOutput, String> {
-    let mut cmd = build_oneshot_command(&command, &workspace, cwd.as_deref())?;
+    let mut cmd = build_shell_command(&command, &workspace, cwd.as_deref())?;
     if let (WorkspaceEnv::Local, Some(dir)) = (&workspace, cwd) {
         cmd.current_dir(dir);
     }
@@ -281,7 +282,7 @@ pub fn shell_bg_list(state: tauri::State<ShellState>) -> Result<Vec<BackgroundPr
     Ok(out)
 }
 
-pub(crate) fn build_oneshot_command(
+pub(crate) fn build_shell_command(
     command: &str,
     #[cfg_attr(not(windows), allow(unused_variables))] workspace: &WorkspaceEnv,
     #[cfg_attr(not(windows), allow(unused_variables))] cwd: Option<&str>,
@@ -391,8 +392,8 @@ mod tests {
     }
 
     #[test]
-    fn build_oneshot_command_uses_sh_minus_c_on_unix() {
-        let cmd = build_oneshot_command("echo hi", &WorkspaceEnv::Local, None).unwrap();
+    fn build_shell_command_uses_sh_minus_c_on_unix() {
+        let cmd = build_shell_command("echo hi", &WorkspaceEnv::Local, None).unwrap();
         assert_eq!(cmd.get_program(), "/bin/sh");
         let args: Vec<_> = cmd.get_args().collect();
         assert_eq!(args, vec!["-c", "echo hi"]);

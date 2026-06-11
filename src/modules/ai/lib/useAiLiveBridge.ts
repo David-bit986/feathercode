@@ -128,6 +128,9 @@ export function useAiLiveBridge(params: Params) {
         useManagedAgentsStore
           .getState()
           .register({ leafId, tabId, sessionId, task: oneLine, cwd });
+        window.dispatchEvent(
+          new CustomEvent("fc:focus-pane", { detail: { tabId } })
+        );
         const hooksReady = invoke("agent_enable_claude_hooks").catch(() => {});
         void (async () => {
           await Promise.all([whenSessionReady(leafId), hooksReady]);

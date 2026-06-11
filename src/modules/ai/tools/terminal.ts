@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { checkShellCommand } from "../lib/security";
+import { toolGate } from "../lib/toolGate";
 import type { ToolContext } from "./context";
 
 export function buildTerminalTools(ctx: ToolContext) {
@@ -18,6 +19,7 @@ export function buildTerminalTools(ctx: ToolContext) {
           .describe("Optional one-line note shown beside the command."),
       }),
       execute: async ({ command, explanation }) => {
+        toolGate.validateSpawn(ctx.getCwd() ?? "", command);
         const safety = checkShellCommand(command);
         if (!safety.ok) return { error: safety.reason };
         // Reject control bytes — the user inserts via click, but the rendered

@@ -4,7 +4,7 @@ import { AiInputBar } from "./AiInputBar";
 import { AiStatusBarControls } from "./AiStatusBarControls";
 import { McpConfigPanel } from "./McpConfigPanel";
 import { SkillsConfigPanel } from "./SkillsConfigPanel";
-import { useChatStore } from "../store/chatStore";
+import { useSessionsStore } from "../store/sessionsStore";
 import { getOrCreateChat } from "../store/chatRuntime";
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { cn } from "@/lib/utils";
@@ -47,7 +47,7 @@ function TabBtn({
 }
 
 export function AiSidePanel({ className }: Props) {
-  const sessionId = useChatStore((s) => s.activeSessionId);
+  const sessionId = useSessionsStore((s) => s.activeSessionId);
   const [tab, setTab] = useState<RightTab>("chat");
 
   return (

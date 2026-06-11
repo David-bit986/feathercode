@@ -1,6 +1,14 @@
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { native } from "./native";
-import { homeDir } from "@tauri-apps/api/path";
+import { useWorkspaceStore } from "@/modules/workspace";
+
+async function resolveHome(): Promise<string> {
+  const stored = useWorkspaceStore.getState().home;
+  if (stored) return stored;
+  const { homeDir } = await import("@tauri-apps/api/path");
+  const raw = await homeDir();
+  return raw.replace(/\\/g, "/");
+}
 
 export type SkillSource = "builtin" | "imported" | "claude-code" | "opencode";
 
@@ -34,7 +42,7 @@ export async function importFromClaudeCode(): Promise<Skill[]> {
   const skills: Skill[] = [];
   let home = "";
   try {
-    home = (await homeDir()).replace(/\\/g, "/");
+    home = await resolveHome();
   } catch {
     return skills;
   }
@@ -55,7 +63,7 @@ export async function importFromOpenCode(): Promise<Skill[]> {
   const skills: Skill[] = [];
   let home = "";
   try {
-    home = (await homeDir()).replace(/\\/g, "/");
+    home = await resolveHome();
   } catch {
     return skills;
   }

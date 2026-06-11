@@ -306,14 +306,31 @@ export function AiInputBar() {
                 }}
                 placeholder="Ask FeatherCode anything   -   # for snippets and commands, @ for files"
                 rows={1}
-                className={cn(
-                  "max-h-40 flex-1 resize-none bg-transparent text-[13px] leading-relaxed outline-none",
-                  "placeholder:text-muted-foreground/60",
-                )}
-              />
-              <AgentSwitcher />
-            </div>
-          </PopoverAnchor>
+                  className={cn(
+                    "max-h-40 flex-1 resize-none bg-transparent text-[13px] leading-relaxed outline-none",
+                    "placeholder:text-muted-foreground/60",
+                  )}
+                />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {c.isBusy && (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      className="h-6 gap-1.5 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        c.stop();
+                      }}
+                      title="Stop generation"
+                    >
+                      <Spinner className="h-3 w-3" />
+                      <span className="text-[10px] uppercase font-semibold tracking-wider">Stop</span>
+                    </Button>
+                  )}
+                  <AgentSwitcher />
+                </div>
+              </div>
+            </PopoverAnchor>
           {fileTrigger ? (
             <FilePickerContent
               files={filteredFiles}

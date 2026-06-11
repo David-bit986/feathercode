@@ -9,6 +9,8 @@ import {
   useChatStore,
   type AgentRunStatus,
 } from "../store/chatStore";
+import { useSessionsStore } from "../store/sessionsStore";
+import { useAgentMetaStore } from "../store/agentMetaStore";
 import { getOrCreateChat } from "../store/chatRuntime";
 
 /**
@@ -36,7 +38,7 @@ export type AgentRunBridgeProps = {
 };
 
 export function AgentRunBridge(props: AgentRunBridgeProps) {
-  const sessionId = useChatStore((s) => s.activeSessionId);
+  const sessionId = useSessionsStore((s) => s.activeSessionId);
   if (!sessionId) return null;
   return <Bridge sessionId={sessionId} {...props} />;
 }
@@ -61,8 +63,8 @@ function Bridge({
   const { status, messages, addToolApprovalResponse } = useChat<UIMessage>({
     chat,
   });
-  const patch = useChatStore((s) => s.patchAgentMeta);
-  const persistMessages = useChatStore((s) => s.persistMessages);
+  const patch = useAgentMetaStore((s) => s.patchAgentMeta);
+  const persistMessages = useSessionsStore((s) => s.persistMessages);
   const setApprovalResponder = useChatStore((s) => s.setApprovalResponder);
 
   // Expose the approval responder so the diff tab can resolve approvals.

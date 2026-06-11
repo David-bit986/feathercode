@@ -21,6 +21,7 @@ import {
   useChatStore,
   useSelectionAskAi,
 } from "@/modules/ai";
+import { useSessionsStore } from "@/modules/ai/store/sessionsStore";
 import { AiComposerProvider } from "@/modules/ai/lib/composer";
 import { AiSidePanel } from "@/modules/ai/components/AiSidePanel";
 import { native } from "@/modules/ai/lib/native";
@@ -61,7 +62,6 @@ import {
 import {
   useTabs,
   useWindowTitle,
-  useWorkspaceCwd,
 } from "@/modules/tabs";
 import {
   clearFocusedTerminal,
@@ -75,7 +75,7 @@ import {
 } from "@/modules/terminal";
 import { ThemeProvider, useThemeFileEditing } from "@/modules/theme";
 import { UpdaterDialog } from "@/modules/updater";
-import { useWorkspaceEnvStore } from "@/modules/workspace";
+import { useWorkspaceEnvStore, useWorkspaceStore, useWorkspaceCwd } from "@/modules/workspace";
 import type { SearchAddon } from "@xterm/addon-search";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CloseDialogs } from "./components/CloseDialogs";
@@ -156,7 +156,7 @@ export default function App() {
 
   const workspaceEnv = useWorkspaceEnvStore((s) => s.env);
   const setWorkspaceEnv = useWorkspaceEnvStore((s) => s.setEnv);
-  const { home, launchCwd, launchCwdResolved, openFolderWorkspace } =
+  const { openFolderWorkspace } =
     useWorkspaceSwitcher({
       tabsRef,
       workspaceEnv,
@@ -164,6 +164,10 @@ export default function App() {
       resetWorkspace,
       clearWorkspaceState,
     });
+
+  const home = useWorkspaceStore((s) => s.home);
+  const launchCwd = useWorkspaceStore((s) => s.launchCwd);
+  const launchCwdResolved = useWorkspaceStore((s) => s.launchCwdResolved);
 
   const handleOpenFolder = useCallback(async () => {
     try {
@@ -620,7 +624,7 @@ export default function App() {
       // Switch AI chat to the managed agent's session
       const ma = useManagedAgentsStore.getState().get(leafId);
       if (ma) {
-        useChatStore.getState().switchSession(ma.sessionId);
+        useSessionsStore.getState().switchSession(ma.sessionId);
         if (!rightOpen) setRightOpen(true);
       }
     },

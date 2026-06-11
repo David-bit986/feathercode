@@ -3,14 +3,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
 
-import { useChatStore, type AgentMeta } from "../store/chatStore";
+import { useAgentMetaStore, type AgentMeta } from "../store/agentMetaStore";
 
 type Props = {
   onClick: () => void;
 };
 
 export function AgentStatusPill({ onClick }: Props) {
-  const meta = useChatStore((s) => s.agentMeta);
+  const meta = useAgentMetaStore((s) => s.agentMeta);
 
   // awaiting-approval is surfaced by the notification + auto-opened mini window.
   if (meta.status === "awaiting-approval") return null;

@@ -2,8 +2,8 @@ use tauri::{AppHandle, Manager};
 
 use crate::modules::git::operations;
 use crate::modules::git::types::{
-    DiscardEntry, GitCommitFileChange, GitCommitResult, GitDiffContentResult, GitDiffResult,
-    GitLogEntry, GitPanelSnapshot, GitPushResult, GitRepoInfo, GitStatusSnapshot,
+    DiscardEntry, GitCommitFileChange, GitCommitResult, GitContext, GitDiffContentResult,
+    GitDiffResult, GitLogEntry, GitPanelSnapshot, GitPushResult, GitRepoInfo, GitStatusSnapshot,
 };
 use crate::modules::workspace::{WorkspaceEnv, WorkspaceRegistry};
 
@@ -28,7 +28,8 @@ pub async fn git_resolve_repo(
 ) -> Result<Option<GitRepoInfo>, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::resolve_repo(r, &cwd, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &cwd, &workspace)?;
+        operations::resolve_repo(r, &ctx).map_err(Into::into)
     })
     .await
 }
@@ -41,7 +42,8 @@ pub async fn git_panel_snapshot(
 ) -> Result<GitPanelSnapshot, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::panel_snapshot(r, &cwd, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &cwd, &workspace)?;
+        operations::panel_snapshot(&ctx).map_err(Into::into)
     })
     .await
 }
@@ -54,7 +56,8 @@ pub async fn git_status(
 ) -> Result<GitStatusSnapshot, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::status(r, &repo_root, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::status(&ctx).map_err(Into::into)
     })
     .await
 }
@@ -69,7 +72,8 @@ pub async fn git_diff(
 ) -> Result<GitDiffResult, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::diff(r, &repo_root, path.as_deref(), staged, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::diff(&ctx, path.as_deref(), staged).map_err(Into::into)
     })
     .await
 }
@@ -85,15 +89,8 @@ pub async fn git_diff_content(
 ) -> Result<GitDiffContentResult, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::diff_content(
-            r,
-            &repo_root,
-            &path,
-            staged,
-            original_path.as_deref(),
-            &workspace,
-        )
-        .map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::diff_content(&ctx, &path, staged, original_path.as_deref()).map_err(Into::into)
     })
     .await
 }
@@ -107,7 +104,8 @@ pub async fn git_stage(
 ) -> Result<(), String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::stage(r, &repo_root, &paths, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::stage(&ctx, &paths).map_err(Into::into)
     })
     .await
 }
@@ -121,7 +119,8 @@ pub async fn git_unstage(
 ) -> Result<(), String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::unstage(r, &repo_root, &paths, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::unstage(&ctx, &paths).map_err(Into::into)
     })
     .await
 }
@@ -135,7 +134,8 @@ pub async fn git_discard(
 ) -> Result<(), String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::discard(r, &repo_root, &entries, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::discard(&ctx, &entries).map_err(Into::into)
     })
     .await
 }
@@ -149,7 +149,8 @@ pub async fn git_commit(
 ) -> Result<GitCommitResult, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::commit(r, &repo_root, &message, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::commit(&ctx, &message).map_err(Into::into)
     })
     .await
 }
@@ -162,7 +163,8 @@ pub async fn git_fetch(
 ) -> Result<(), String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::fetch(r, &repo_root, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::fetch(&ctx).map_err(Into::into)
     })
     .await
 }
@@ -175,7 +177,8 @@ pub async fn git_pull_ff_only(
 ) -> Result<(), String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::pull_ff_only(r, &repo_root, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::pull_ff_only(&ctx).map_err(Into::into)
     })
     .await
 }
@@ -188,7 +191,8 @@ pub async fn git_push(
 ) -> Result<GitPushResult, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::push(r, &repo_root, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::push(&ctx).map_err(Into::into)
     })
     .await
 }
@@ -203,14 +207,8 @@ pub async fn git_log(
 ) -> Result<Vec<GitLogEntry>, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::log(
-            r,
-            &repo_root,
-            limit.unwrap_or(30),
-            before_sha.as_deref(),
-            &workspace,
-        )
-        .map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::log(&ctx, limit.unwrap_or(30), before_sha.as_deref()).map_err(Into::into)
     })
     .await
 }
@@ -224,7 +222,8 @@ pub async fn git_show_commit(
 ) -> Result<GitDiffResult, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::show_commit_diff(r, &repo_root, &sha, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::show_commit_diff(&ctx, &sha).map_err(Into::into)
     })
     .await
 }
@@ -238,7 +237,8 @@ pub async fn git_commit_files(
 ) -> Result<Vec<GitCommitFileChange>, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::commit_files(r, &repo_root, &sha, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::commit_files(&ctx, &sha).map_err(Into::into)
     })
     .await
 }
@@ -254,15 +254,8 @@ pub async fn git_commit_file_diff(
 ) -> Result<GitDiffContentResult, String> {
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::commit_file_diff(
-            r,
-            &repo_root,
-            &sha,
-            &path,
-            original_path.as_deref(),
-            &workspace,
-        )
-        .map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::commit_file_diff(&ctx, &sha, &path, original_path.as_deref()).map_err(Into::into)
     })
     .await
 }
@@ -277,7 +270,8 @@ pub async fn git_remote_url(
     let remote = name.unwrap_or_else(|| "origin".to_string());
     let workspace = WorkspaceEnv::from_option(workspace);
     blocking(app, move |r| {
-        operations::remote_url(r, &repo_root, &remote, &workspace).map_err(Into::into)
+        let ctx = GitContext::guard(r, &repo_root, &workspace)?;
+        operations::remote_url(&ctx, &remote).map_err(Into::into)
     })
     .await
 }

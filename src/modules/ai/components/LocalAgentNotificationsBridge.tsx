@@ -3,6 +3,7 @@ import { useWindowFocus } from "@/modules/agents/lib/useWindowFocus";
 import { useAgentStore } from "@/modules/agents/store/agentStore";
 import type { AgentStatus } from "@/modules/agents/lib/types";
 import { useEffect, useRef } from "react";
+import { useAgentMetaStore } from "../store/agentMetaStore";
 import { useChatStore } from "../store/chatStore";
 
 const AGENT = "FeatherCode";
@@ -14,10 +15,6 @@ type RunStatus =
   | "awaiting-approval"
   | "error";
 
-function isBusy(s: RunStatus): boolean {
-  return s === "thinking" || s === "streaming" || s === "awaiting-approval";
-}
-
 function liveStatus(s: RunStatus): AgentStatus | null {
   if (s === "awaiting-approval") return "waiting";
   if (s === "thinking" || s === "streaming") return "working";
@@ -25,8 +22,8 @@ function liveStatus(s: RunStatus): AgentStatus | null {
 }
 
 export function LocalAgentNotificationsBridge() {
-  const status = useChatStore((s) => s.agentMeta.status) as RunStatus;
-  const error = useChatStore((s) => s.agentMeta.error);
+  const status = useAgentMetaStore((s) => s.agentMeta.status) as RunStatus;
+  const error = useAgentMetaStore((s) => s.agentMeta.error);
   const visible = useChatStore((s) => s.panelOpen);
   const focused = useWindowFocus();
 
@@ -66,8 +63,6 @@ export function LocalAgentNotificationsBridge() {
       fire("attention", "FeatherCode needs your approval", "Approve a tool to continue");
     } else if (status === "error") {
       fire("error", "FeatherCode run failed", error ?? undefined);
-    } else if (status === "idle" && isBusy(was)) {
-      fire("finished", "FeatherCode finished", "Your task is ready");
     }
   }, [status, error]);
 

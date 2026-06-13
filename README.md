@@ -1,54 +1,50 @@
 <div align="center">
   <img src="public/logo.png" width="144" height="144" alt="FeatherCode" />
   <h1>FeatherCode</h1>
-
-  <p><strong>A customisable, AI-native dev workspace built on Terax.</strong></p>
-
-
+  <p><strong>Dev workspace built on Terax with modular skills and local model integration.</strong></p>
 </div>
 
 ---
 
 ## ⚠️ Work in Progress
 
-I develop this project. It contains bugs. Features break and layouts lack polish. [Report issues](https://github.com/David-bit986/feathercode/issues).
+This project is under active development. Expect bugs, broken features, and unpolished layouts. Report issues [here](https://github.com/David-bit986/feathercode/issues).
 
 ---
 
 ## About
 
-FeatherCode forks [Terax](https://github.com/crynta/terax-ai) by [crynta](https://github.com/crynta). Antigravity lacks certain features I need, so I built them on top of Terax.
+FeatherCode forks [Terax](https://github.com/crynta/terax-ai). I built this fork to add features missing from Terax and Antigravity.
 
-### Differences from Terax
+### Key Additions
 
-- **Skills system**: Import skill sets from folders. Toggle them. Invoke them via `/skill-name` in the chat input.
-- **More AI providers**: DeepSeek, Mistral, xAI, OpenRouter, LM Studio, MLX, and Ollama. The model picker displays brand logos.
-- **Per-project sessions**: Each workspace maintains an isolated chat history.
-- **10 themes**: Feather, Claude, Tokyo Night, Nord, Tide, Sage, Catppuccin, Gruvbox, Rosé Pine, and Caffeine. Each includes light and dark variants.
-- **Complete rebrand**: The code, UI, shell integration, and config omit Terax branding.
-- **Bug fixes**: The AI panel resizes. Terminal right-click copies text. You chat during agent execution. Clicking agent notifications opens the target session.
+- **Modular Skills**: Import folders as skill sets, toggle them, and trigger them using `/skill-name` in chat.
+- **Provider Support**: Integrates DeepSeek, Mistral, xAI, OpenRouter, LM Studio, MLX, and Ollama.
+- **Isolated Sessions**: Each workspace maintains its own chat history.
+- **Visual Themes**: 10 themes (Feather, Claude, Tokyo Night, Nord, Tide, Sage, Catppuccin, Gruvbox, Rosé Pine, Caffeine) with light and dark modes.
+- **Clean Interface**: Omit all Terax branding from UI, config, and shell integration.
+- **Fixes**: Resizable AI panels, terminal right-click text copying, concurrent chat during agent execution, and direct navigation from notifications to active sessions.
 
-[Terax](https://github.com/crynta/terax-ai) provides the core engineering. This includes the PTY backend, WebGL terminal, agentic AI pipeline, CodeMirror editor, and git tools. Star their repo.
+[Terax](https://github.com/crynta/terax-ai) provides the underlying backend (PTY, WebGL terminal, agentic pipeline, CodeMirror integration, and Git tooling).
 
 ## Install
 
 Download the installer from [Releases](https://github.com/David-bit986/feathercode/releases/latest).
 
-### Windows
-- Windows Defender shows "Windows protected your PC" on first launch. Click **More info**, then click **Run anyway**.
-- Default shell priority: `pwsh.exe`, `powershell.exe`, `cmd.exe`.
+### Windows Run Steps
+- Windows Defender shows "Windows protected your PC" on first launch. Click **More info**, then **Run anyway**.
+- Shell priority order: `pwsh.exe`, `powershell.exe`, `cmd.exe`.
 
-## Build from source
+## Build from Source
 
 ```bash
 pnpm install
-pnpm tauri dev          # development
-pnpm tauri build        # production bundle
+pnpm tauri dev          # Run development app
+pnpm tauri build        # Build production executable
 ```
 
-**Prerequisites:** Rust (stable, [rustup.rs](https://rustup.rs)), Node 20+, [pnpm](https://pnpm.io), [Tauri prerequisites](https://tauri.app/start/prerequisites/).
+**Prerequisites:** Rust stable ([rustup.rs](https://rustup.rs)), Node 20+, [pnpm](https://pnpm.io), and [Tauri prerequisites](https://tauri.app/start/prerequisites/).
 
-## Tech stack
+## Stack
 
 Tauri 2, Rust, portable-pty, React 19, TypeScript, Vite, xterm.js, CodeMirror 6, Vercel AI SDK v6, Tailwind v4, shadcn/ui, Zustand, Lucide.
-
